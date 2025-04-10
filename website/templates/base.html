@@ -11,19 +11,45 @@
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+  <style>
+    /* Global Link Styling */
+    a {
+      color: #198754; /* Bootstrap success green */
+      text-decoration: none; /* Optional: remove underline */
+    }
+    a:hover {
+      color: #ffc107; /* Bootstrap warning yellow */
+      /* text-decoration: underline; */ /* Optional: underline on hover */
+    }
+    /* Ensure dropdown items don't inherit global link color */
+    .dropdown-item {
+        color: #212529; /* Default dark text color */
+    }
+    .dropdown-item:hover {
+         color: #1e2125;
+         background-color: #e9ecef;
+    }
+    .dropdown-item.active {
+         color: #fff;
+         background-color: #198754; /* Green for active dropdown */
+    }
+
+  </style>
+
   {% block extra_css %}{% endblock %}
 </head>
-<body class="d-flex bg-light">
+<body class="bg-light">
 
   <!-- Sidebar -->
-  <nav class="d-flex flex-column bg-white shadow-sm p-3 vh-100" style="width: 250px;">
+  <nav class="d-flex flex-column bg-white shadow-sm p-3 vh-100" 
+       style="width: 250px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 1000;">
     <!-- Logo Only -->
     <div class="d-flex align-items-center justify-content-center mb-4">
       <img src="{{ url_for('static', filename='paddy rice tracker.svg') }}" alt="PaddyTracker Logo" class="img-fluid" style="max-height: 170px;">
     </div>
 
     <!-- Navigation -->
-    <ul class="nav flex-column">
+    <ul class="nav flex-column" style="overflow-y: auto;">
       <li class="nav-item mb-2">
         <a href="{{ url_for('views.barangay_dashboard') }}" class="nav-link {% if request.path == '/barangay_dashboard' %}active text-warning fw-bold{% else %}text-success{% endif %}">
           <i class="bi bi-grid me-2"></i> Dashboard
@@ -43,6 +69,11 @@
           <i class="bi bi-people me-2"></i> Farmers
         </a>
       </li>
+      <li class="nav-item mt-2">
+        <a href="{{ url_for('views.barangay_analytics') }}" class="nav-link {% if request.path == '/barangay_analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-graph-up me-2"></i> Analytics
+        </a>
+      </li>
       {% endif %}
 
       {% if current_user.is_authenticated and current_user.role == 'municipal' %}
@@ -56,7 +87,7 @@
   </nav>
 
   <!-- Main Content -->
-  <div class="flex-grow-1 p-4">
+  <div class="flex-grow-1 p-4" style="margin-left: 250px;">
     <!-- Top Bar -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div></div>

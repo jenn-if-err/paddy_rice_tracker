@@ -219,85 +219,105 @@ def select_farmer():
 @views.route('/barangay_dashboard')
 @login_required
 def barangay_dashboard():
-    # Get view parameters
-    view_type = request.args.get('view', 'total')
-    time_period = request.args.get('period', 'month')
-    
     if current_user.role == 'municipal':
+        # === Municipal View Logic (Always Total Aggregated View) ===
         records = DryingRecord.query.all()
-        
-        if view_type == 'total':
-            # Group data by barangay (total view)
-            barangay_data = {}
-            for record in records:
-                barangay = record.barangay_name
-                if not barangay:
-                    continue
-                    
-                if barangay not in barangay_data:
-                    barangay_data[barangay] = {'initial_weight': 0, 'final_weight': 0}
+        barangay_data = {}
+        for record in records:
+            barangay = record.barangay_name
+            if not barangay:
+                continue # Skip records without a barangay name
+            if barangay not in barangay_data:
+                barangay_data[barangay] = {'initial_weight': 0, 'final_weight': 0}
+            # Ensure weights are treated as floats
+            try:
                 barangay_data[barangay]['initial_weight'] += float(record.initial_weight)
                 barangay_data[barangay]['final_weight'] += float(record.final_weight)
+            except (ValueError, TypeError):
+                pass # Or log an error
                 
-            return render_template('dashboard.html', 
-                                   monthly_data=barangay_data, 
-                                   user=current_user, 
-                                   is_municipal=True,
-                                   view_type=view_type,
-                                   time_period=time_period)
-        else:
-            # Group data by barangay and time period
-            time_data = {}
-            for record in records:
-                if not record.date_dried or not record.barangay_name:
-                    continue
-                
-                # Get time key based on selected period (month or year)
-                if time_period == 'month':
-                    time_key = record.date_dried.strftime('%b %Y')
-                else:
-                    time_key = record.date_dried.strftime('%Y')
-                
-                barangay = record.barangay_name
-                
-                # Initialize nested structure if needed
-                if time_key not in time_data:
-                    time_data[time_key] = {}
-                if barangay not in time_data[time_key]:
-                    time_data[time_key][barangay] = {'initial_weight': 0, 'final_weight': 0}
-                
-                # Add weights
-                time_data[time_key][barangay]['initial_weight'] += float(record.initial_weight)
-                time_data[time_key][barangay]['final_weight'] += float(record.final_weight)
-            
-            # Sort by time periods
-            sorted_time_data = dict(sorted(time_data.items()))
-            
-            return render_template('dashboard.html', 
-                                   time_data=sorted_time_data,
-                                   user=current_user, 
-                                   is_municipal=True,
-                                   view_type=view_type,
-                                   time_period=time_period)
+        return render_template('dashboard.html', 
+                               monthly_data=barangay_data, # Pass as monthly_data
+                               user=current_user, 
+                               is_municipal=True,
+                               view_type='total') # Indicate it's the total view
         
     elif current_user.role == 'barangay':
+        # === Barangay View Logic (Original Monthly Bar Chart) ===
         records = DryingRecord.query.filter_by(barangay_name=current_user.barangay_name).all()
-        
-        # Group data by month
         monthly_data = {}
         for record in records:
             if record.date_dried:
-                month = record.date_dried.strftime('%B')
+                month = record.date_dried.strftime('%B %Y') # Include year
                 if month not in monthly_data:
                     monthly_data[month] = {'initial_weight': 0, 'final_weight': 0}
-                monthly_data[month]['initial_weight'] += float(record.initial_weight)
-                monthly_data[month]['final_weight'] += float(record.final_weight)
-
-        return render_template('dashboard.html', monthly_data=monthly_data, user=current_user, is_municipal=False)
+                try:
+                    monthly_data[month]['initial_weight'] += float(record.initial_weight)
+                    monthly_data[month]['final_weight'] += float(record.final_weight)
+                except (ValueError, TypeError):
+                    pass
+        sorted_monthly_data = {}
+        try: 
+            sorted_keys = sorted(monthly_data.keys(), key=lambda d: datetime.strptime(d, '%B %Y'))
+            for month_str in sorted_keys:
+                sorted_monthly_data[month_str] = monthly_data[month_str]
+        except ValueError:
+            sorted_monthly_data = monthly_data
+            
+        return render_template('dashboard.html', 
+                               monthly_data=sorted_monthly_data, 
+                               user=current_user, 
+                               is_municipal=False,
+                               view_type='monthly_bar')
     else:
-        # Handle other roles
-        flash("Unauthorized access", "error")
+        # Handle other roles (e.g., Farmer)
+        return redirect(url_for('views.records'))
+
+# === NEW Barangay Analytics Route ===
+@views.route('/barangay_analytics')
+@login_required
+def barangay_analytics():
+    if current_user.role != 'barangay':
+        flash("Unauthorized access.", "error")
         return redirect(url_for('views.dashboard'))
+
+    time_period = request.args.get('period', 'month') # Default to month
+    records = DryingRecord.query.filter_by(barangay_name=current_user.barangay_name).all()
+    
+    analytics_data = {}
+    if time_period == 'year':
+        # Group data by year
+        for record in records:
+            if record.date_dried:
+                year = record.date_dried.strftime('%Y')
+                if year not in analytics_data:
+                    analytics_data[year] = 0
+                analytics_data[year] += float(record.final_weight)
+    else: # time_period == 'month'
+        # Group data by month
+        for record in records:
+            if record.date_dried:
+                month_year = record.date_dried.strftime('%b %Y')
+                if month_year not in analytics_data:
+                    analytics_data[month_year] = 0
+                analytics_data[month_year] += float(record.final_weight)
+    
+    # Sort data by time key
+    sorted_data = {}
+    try:
+        if time_period == 'month':
+            sorted_keys = sorted(analytics_data.keys(), key=lambda d: datetime.strptime(d, '%b %Y'))
+        else:
+            sorted_keys = sorted(analytics_data.keys(), key=int) # Sort years numerically
+        for key in sorted_keys:
+            sorted_data[key] = analytics_data[key]
+    except ValueError:
+         sorted_data = analytics_data # Fallback
+
+    return render_template('barangay_analytics.html', 
+                           analytics_data=sorted_data, 
+                           time_period=time_period,
+                           user=current_user)
 
 @views.route('/edit_record/<int:record_id>', methods=['GET', 'POST'])
 @login_required

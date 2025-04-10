@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Analytics{% endblock %}
+{% block title %}Barangay Analytics{% endblock %}
 
 {% block content %}
 <!-- Include Chart.js -->
@@ -7,10 +7,10 @@
 
 <div class="container mt-5" style="max-width: 750px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Rice Yield Analytics (Post-Drying)</h2>
+        <h2>{{ current_user.barangay_name }} Yield Analytics (Post-Drying)</h2>
         <div class="btn-group" role="group">
-            <a href="{{ url_for('views.analytics', view='year') }}" class="btn btn-outline-success {% if view_type == 'year' %}active{% endif %}">Yearly</a>
-            <a href="{{ url_for('views.analytics', view='month') }}" class="btn btn-outline-success {% if view_type == 'month' %}active{% endif %}">Monthly</a>
+            <a href="{{ url_for('views.barangay_analytics', period='year') }}" class="btn btn-outline-success {% if time_period == 'year' %}active{% endif %}">Yearly</a>
+            <a href="{{ url_for('views.barangay_analytics', period='month') }}" class="btn btn-outline-success {% if time_period == 'month' %}active{% endif %}">Monthly</a>
         </div>
     </div>
     <canvas id="analyticsChart" height="100"></canvas>
@@ -47,7 +47,7 @@
                 },
                 title: {
                     display: true,
-                    text: '{{ view_type|capitalize }} Yield Trend'
+                    text: '{{ time_period|capitalize }} Yield Trend'
                 }
             },
             scales: {
@@ -61,7 +61,7 @@
                 x: {
                     title: {
                         display: true,
-                        text: '{% if view_type == "year" %}Year{% else %}Month{% endif %}'
+                        text: '{{ time_period|capitalize }}'
                     }
                 }
             },
