@@ -14,23 +14,24 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def dashboard():
-    if hasattr(current_user, 'role'):
-        # ✅ Google OAuth Users (Barangay or Municipal)
-        if current_user.role == 'municipal':
-            records = DryingRecord.query.order_by(DryingRecord.timestamp.desc()).all()
-        elif current_user.role == 'barangay':
-            records = DryingRecord.query \
-                .filter_by(barangay_name=current_user.barangay_name) \
-                .order_by(DryingRecord.timestamp.desc()).all()
-        else:
-            return "Invalid user role", 403
-    else:
-        # ✅ Farmer Login (Only sees own data)
+    # Now that Farmer also has a .role, we check it directly
+    if current_user.role == 'municipal':
+        # Redirect municipal users to their specific dashboard view
+        return redirect(url_for('views.barangay_dashboard')) 
+    elif current_user.role == 'barangay':
+        # Redirect barangay users to their specific dashboard view
+        return redirect(url_for('views.barangay_dashboard'))
+    elif current_user.role == 'farmer':
+        # Farmer Login: Redirect to records page
+        # (Or create a specific farmer dashboard if desired)
         records = DryingRecord.query \
             .filter_by(farmer_id=current_user.id) \
             .order_by(DryingRecord.timestamp.desc()).all()
-
-    return render_template("records.html", user=current_user, records=records)
+        return render_template("records.html", user=current_user, records=records)
+    else:
+        # Should not happen if roles are defined correctly
+        flash("Unknown user role.", "error")
+        return redirect(url_for('auth.login'))
 
 
 # ============================

@@ -19,11 +19,14 @@ class User(db.Model, UserMixin):
     # Relationship to DryingRecord
     records = db.relationship('DryingRecord', backref='author', lazy=True)
 
+    # Override get_id to return a prefixed ID
+    def get_id(self):
+        return f"user-{self.id}"
 
 # ========================
 # Farmer Model
 # ========================
-class Farmer(db.Model):
+class Farmer(db.Model, UserMixin):
     __tablename__ = 'farmers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -41,6 +44,22 @@ class Farmer(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('farmers', lazy=True))
 
+    # Override get_id to return a prefixed ID
+    def get_id(self):
+        return f"farmer-{self.id}"
+
+    # Add role attribute for consistency in templates
+    @property
+    def role(self):
+        return 'farmer'
+        
+    # Add full_name property for consistency (optional but helpful)
+    @property
+    def full_name(self):
+        if self.middle_name:
+            return f"{self.first_name} {self.middle_name} {self.last_name}"
+        else:
+            return f"{self.first_name} {self.last_name}"
 
 # ==========================
 # Drying Records Table

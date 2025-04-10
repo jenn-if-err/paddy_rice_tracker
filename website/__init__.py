@@ -33,8 +33,23 @@ def create_app():
 
     # ✅ Login user loader
     @login_manager.user_loader
-    def load_user(user_id):
-        from .models import User
-        return User.query.get(int(user_id))
+    def load_user(user_id_str):
+        from .models import User, Farmer # Import both models
+        
+        # User ID string is now prefixed, e.g., "user-1" or "farmer-5"
+        try:
+            prefix, user_id = user_id_str.split('-', 1)
+            user_id = int(user_id)
+        except (ValueError, AttributeError):
+            # Invalid ID format in session
+            return None
+
+        if prefix == 'user':
+            return User.query.get(user_id)
+        elif prefix == 'farmer':
+            return Farmer.query.get(user_id)
+        else:
+            # Unknown prefix
+            return None
 
     return app
