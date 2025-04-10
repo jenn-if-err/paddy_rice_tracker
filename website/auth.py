@@ -23,7 +23,6 @@ def google_login():
 
     resp = google.get("/oauth2/v2/userinfo")
     if not resp.ok:
-        flash("Failed to fetch user info from Google.", "error")
         return redirect(url_for("auth.login"))
 
     user_info = resp.json()
@@ -32,11 +31,9 @@ def google_login():
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        flash("Unauthorized email. You are not registered.", "error")
         return redirect(url_for("auth.login"))
 
     login_user(user)
-    flash(f"Logged in as {user.role.title()}!", "success")
     return redirect(url_for("views.dashboard"))
 
 # ✅ Main Login Page
@@ -51,19 +48,17 @@ def login():
             farmer = Farmer.query.filter_by(username=email).first()
             if farmer and check_password_hash(farmer.password, password):
                 login_user(farmer)
-                flash("Logged in as Farmer!", "success")
                 return redirect(url_for("views.dashboard"))
             else:
-                flash("Invalid username or password.", "error")
+                return redirect(url_for("auth.login"))
         else:
             # Regular user (email format)
             user = User.query.filter_by(email=email).first()
             if user and check_password_hash(user.password, password):
                 login_user(user)
-                flash(f"Logged in as {user.role.title()}!", "success")
                 return redirect(url_for("views.dashboard"))
             else:
-                flash("Invalid email or password.", "error")
+                return redirect(url_for("auth.login"))
 
     return render_template("login.html")
 
@@ -78,11 +73,9 @@ def sign_up():
         password2 = request.form.get("password2")
 
         if password1 != password2:
-            flash("Passwords do not match.", "error")
             return redirect(url_for('auth.sign_up'))
 
         if User.query.filter_by(email=email).first():
-            flash("Email already registered.", "error")
             return redirect(url_for('auth.sign_up'))
 
         hashed_pw = generate_password_hash(password1)
@@ -96,7 +89,6 @@ def sign_up():
 
         db.session.add(new_user)
         db.session.commit()
-        flash("Barangay account created successfully!", "success")
         return redirect(url_for('auth.login'))
 
     return render_template("sign_up.html")
@@ -111,11 +103,9 @@ def sign_up_municipal():
         password2 = request.form.get("password2")
 
         if password1 != password2:
-            flash("Passwords do not match.", "error")
             return redirect(url_for('auth.sign_up_municipal'))
 
         if User.query.filter_by(email=email).first():
-            flash("Email already registered.", "error")
             return redirect(url_for('auth.sign_up_municipal'))
 
         hashed_pw = generate_password_hash(password1)
@@ -129,7 +119,6 @@ def sign_up_municipal():
 
         db.session.add(new_user)
         db.session.commit()
-        flash("Municipal account created successfully!", "success")
         return redirect(url_for('auth.login'))
 
     return render_template("sign_up_municipal.html")
@@ -139,5 +128,4 @@ def sign_up_municipal():
 @login_required
 def logout():
     logout_user()
-    flash("You have been logged out.", "info")
     return redirect(url_for('auth.login'))
