@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Farmer Analytics{% endblock %}
+
+{% block content %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-5" style="max-width: 750px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Your Yield Analytics (Post-Drying)</h2>
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('views.farmer_analytics', period='year') }}" class="btn btn-outline-success {% if time_period == 'year' %}active{% endif %}">Yearly</a>
+            <a href="{{ url_for('views.farmer_analytics', period='month') }}" class="btn btn-outline-success {% if time_period == 'month' %}active{% endif %}">Monthly</a>
+        </div>
+    </div>
+    <canvas id="analyticsChart" height="100"></canvas>
+</div>
+
+<script>
+    const analyticsData = {{ analytics_data|tojson }};
+    const labels = Object.keys(analyticsData);
+    const values = Object.values(analyticsData);
+
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Yield (Post-Drying) (kg)', // Simplified label
+            data: values,
+            fill: false,
+            borderColor: 'rgb(0, 128, 0)',
+            pointBackgroundColor: 'rgb(0, 128, 0)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(0, 128, 0)',
+            tension: 0.1
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: '{{ time_period|capitalize }} Yield Trend' // Simplified title
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '{{ time_period|capitalize }}'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 6
+                },
+                line: {
+                    borderWidth: 3
+                }
+            }
+        }
+    };
+
+    // Destroy previous chart instance if exists
+    let existingChart = Chart.getChart("analyticsChart");
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    // Create new chart
+    const analyticsChart = new Chart(
+        document.getElementById('analyticsChart'),
+        config
+    );
+</script>
+{% endblock %} 

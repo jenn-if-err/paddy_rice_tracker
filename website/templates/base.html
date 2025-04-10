@@ -75,6 +75,14 @@
         </a>
       </li>
       {% endif %}
+      
+      {% if current_user.is_authenticated and current_user.role == 'farmer' %}
+      <li class="nav-item mt-2">
+        <a href="{{ url_for('views.farmer_analytics') }}" class="nav-link {% if request.path == '/farmer_analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-graph-up me-2"></i> Analytics
+        </a>
+      </li>
+      {% endif %}
 
       {% if current_user.is_authenticated and current_user.role == 'municipal' %}
       <li class="nav-item mt-2">

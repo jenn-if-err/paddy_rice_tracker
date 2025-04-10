@@ -14,7 +14,7 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def dashboard():
-    # Now that Farmer also has a .role, we check it directly
+    # Check role directly
     if current_user.role == 'municipal':
         # Redirect municipal users to their specific dashboard view
         return redirect(url_for('views.barangay_dashboard')) 
@@ -22,14 +22,30 @@ def dashboard():
         # Redirect barangay users to their specific dashboard view
         return redirect(url_for('views.barangay_dashboard'))
     elif current_user.role == 'farmer':
-        # Farmer Login: Redirect to records page
-        # (Or create a specific farmer dashboard if desired)
-        records = DryingRecord.query \
-            .filter_by(farmer_id=current_user.id) \
-            .order_by(DryingRecord.timestamp.desc()).all()
-        return render_template("records.html", user=current_user, records=records)
+        # === Farmer Dashboard Logic (Aggregated by Batch Name) ===
+        records = DryingRecord.query.filter_by(farmer_id=current_user.id).all()
+        batch_data = {}
+        for record in records:
+            batch = record.batch_name
+            if not batch: # Should ideally not happen if batch_name is required
+                batch = "(Unnamed Batch)"
+                
+            if batch not in batch_data:
+                batch_data[batch] = {'initial_weight': 0, 'final_weight': 0}
+            # Ensure weights are treated as floats
+            try:
+                batch_data[batch]['initial_weight'] += float(record.initial_weight)
+                batch_data[batch]['final_weight'] += float(record.final_weight)
+            except (ValueError, TypeError):
+                pass # Or log an error
+
+        return render_template('dashboard.html', 
+                               monthly_data=batch_data, # Pass as monthly_data for template
+                               user=current_user, 
+                               is_municipal=False,
+                               view_type='batch_bar') # New view_type for farmer dashboard
     else:
-        # Should not happen if roles are defined correctly
+        # Should not happen
         flash("Unknown user role.", "error")
         return redirect(url_for('auth.login'))
 
@@ -336,6 +352,63 @@ def barangay_analytics():
          sorted_data = analytics_data # Fallback
 
     return render_template('barangay_analytics.html', 
+                           analytics_data=sorted_data, 
+                           time_period=time_period,
+                           user=current_user)
+
+# === Farmer Analytics Route ===
+@views.route('/farmer_analytics')
+@login_required
+def farmer_analytics():
+    if current_user.role != 'farmer':
+        flash("Unauthorized access.", "error")
+        # Redirect non-farmers appropriately
+        if hasattr(current_user, 'role') and current_user.role in ['municipal', 'barangay']:
+             return redirect(url_for('views.barangay_dashboard'))
+        else:
+            return redirect(url_for('auth.login'))
+
+    time_period = request.args.get('period', 'month') # Default to month
+    # Query only records for the current farmer
+    records = DryingRecord.query.filter_by(farmer_id=current_user.id).all()
+    
+    analytics_data = {}
+    if time_period == 'year':
+        # Group data by year
+        for record in records:
+            if record.date_dried:
+                year = record.date_dried.strftime('%Y')
+                if year not in analytics_data:
+                    analytics_data[year] = 0
+                # Use final_weight for yield
+                try:
+                     analytics_data[year] += float(record.final_weight)
+                except (ValueError, TypeError): pass 
+    else: # time_period == 'month'
+        # Group data by month
+        for record in records:
+            if record.date_dried:
+                month_year = record.date_dried.strftime('%b %Y')
+                if month_year not in analytics_data:
+                    analytics_data[month_year] = 0
+                # Use final_weight for yield
+                try:
+                     analytics_data[month_year] += float(record.final_weight)
+                except (ValueError, TypeError): pass
+    
+    # Sort data by time key
+    sorted_data = {}
+    try:
+        if time_period == 'month':
+            sorted_keys = sorted(analytics_data.keys(), key=lambda d: datetime.strptime(d, '%b %Y'))
+        else:
+            sorted_keys = sorted(analytics_data.keys(), key=int) # Sort years numerically
+        for key in sorted_keys:
+            sorted_data[key] = analytics_data[key]
+    except ValueError:
+         sorted_data = analytics_data # Fallback
+
+    return render_template('farmer_analytics.html', 
                            analytics_data=sorted_data, 
                            time_period=time_period,
                            user=current_user)

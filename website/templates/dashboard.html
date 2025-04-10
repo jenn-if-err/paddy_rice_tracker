@@ -12,10 +12,15 @@
         <h2>
             {% if is_municipal %}
             Total Barangay Yield Statistics
-            {% else %}
+            {% elif user.role == 'barangay' %}
             Monthly Yield Statistics
+            {% elif user.role == 'farmer' %}
+            Yield Statistics by Batch
+            {% else %}
+            Dashboard
             {% endif %}
         </h2>
+        <!-- No dropdown toggle needed for farmer -->
     </div>
     
     <canvas id="yieldChart"></canvas>
@@ -57,7 +62,7 @@
                     stacked: true,
                     title: {
                         display: true,
-                        text: '{% if is_municipal %}Barangay{% else %}Month{% endif %}'
+                        text: '{% if is_municipal %}Barangay{% elif user.role == "barangay" %}Month{% elif user.role == "farmer" %}Batch Name{% else %}Label{% endif %}'
                     }
                 },
                 y: {
@@ -71,7 +76,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: '{% if is_municipal %}Total Yield by Barangay{% else %}Monthly Yield{% endif %}'
+                    text: '{% if is_municipal %}Total Yield by Barangay{% elif user.role == "barangay" %}Monthly Yield{% elif user.role == "farmer" %}Yield by Batch{% else %}Chart{% endif %}'
                 }
             }
         }
