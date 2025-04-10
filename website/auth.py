@@ -40,46 +40,32 @@ def google_login():
     return redirect(url_for("views.dashboard"))
 
 # ✅ Main Login Page
-@auth.route('/login', methods=['GET', 'POST'])  # ✅ POST added
+@auth.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
 
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            flash(f"Logged in as {user.role.title()}!", "success")
-            return redirect(url_for("views.dashboard"))
+        # Check if input is a farmer username (no @ symbol)
+        if '@' not in email:
+            farmer = Farmer.query.filter_by(username=email).first()
+            if farmer and check_password_hash(farmer.password, password):
+                login_user(farmer)
+                flash("Logged in as Farmer!", "success")
+                return redirect(url_for("views.dashboard"))
+            else:
+                flash("Invalid username or password.", "error")
         else:
-            flash("Invalid credentials.", "error")
+            # Regular user (email format)
+            user = User.query.filter_by(email=email).first()
+            if user and check_password_hash(user.password, password):
+                login_user(user)
+                flash(f"Logged in as {user.role.title()}!", "success")
+                return redirect(url_for("views.dashboard"))
+            else:
+                flash("Invalid email or password.", "error")
 
     return render_template("login.html")
-
-# ✅ Farmer Login
-@auth.route("/login/farmer", methods=['GET', 'POST'])
-def login_farmer():
-    if request.method == 'POST':
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        farmer = Farmer.query.filter_by(username=username).first()
-        if farmer and check_password_hash(farmer.password, password):
-            login_user(farmer)
-            flash("Logged in as Farmer!", "success")
-            return redirect(url_for("views.dashboard"))
-        else:
-            flash("Invalid username or password.", "error")
-
-    return render_template("login_farmer.html")
-
-# ✅ Logout
-@auth.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.", "info")
-    return redirect(url_for('auth.login'))
 
 # ✅ Barangay Sign-Up
 @auth.route('/sign-up', methods=['GET', 'POST'])
@@ -147,3 +133,11 @@ def sign_up_municipal():
         return redirect(url_for('auth.login'))
 
     return render_template("sign_up_municipal.html")
+
+# ✅ Logout
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for('auth.login'))
