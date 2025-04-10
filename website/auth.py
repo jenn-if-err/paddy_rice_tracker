@@ -50,6 +50,7 @@ def login():
                 login_user(farmer)
                 return redirect(url_for("views.dashboard"))
             else:
+                flash("Invalid username or password.", "error")
                 return redirect(url_for("auth.login"))
         else:
             # Regular user (email format)
@@ -58,6 +59,7 @@ def login():
                 login_user(user)
                 return redirect(url_for("views.dashboard"))
             else:
+                flash("Invalid email or password.", "error")
                 return redirect(url_for("auth.login"))
 
     return render_template("login.html")

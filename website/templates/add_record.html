@@ -26,7 +26,6 @@
             {% if user.role == 'barangay' %}
                 <div class="mb-3">
                     <label for="farmer_id" class="form-label">Farmer Name</label>
-                    <!-- Always show dropdown for barangay users -->
                     <select class="form-control" id="farmer_id" name="farmer_id" required>
                         <option value="">Select Farmer</option>
                         {% for farmer in farmers %}
@@ -35,7 +34,6 @@
                     </select>
                 </div>
             {% elif user.role == 'farmer' %}
-                <!-- Farmer adding for themselves, pass ID via hidden input -->
                 <input type="hidden" name="farmer_id" value="{{ user.id }}">
             {% endif %}
 

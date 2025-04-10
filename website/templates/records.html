@@ -3,91 +3,65 @@
 {% block title %}Drying Records{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card p-4 shadow">
-        <h2 class="text-center mb-4">Drying History</h2>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 fw-bold">Drying Records</h2>
+    <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
+      <i class="bi bi-plus-lg me-1"></i> Add Record
+    </a>
+  </div>
 
-        <!-- Flash Message for Success -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        {% if records %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        {% if user.role != 'farmer' %}
-                        <th>Barangay</th>
-                        <th>Farmer Name</th>
-                        {% endif %}
-                        <th>Batch Name</th>
-                        <th>Due Date</th>
-                        <th>Date Planted</th>
-                        <th>Date Harvested</th>
-                        <th>Date Dried</th>
-                        <th>Initial Weight (kg)</th>
-                        <th>Final Weight (kg) (Yield)</th>
-                        <th>
-                            <i class="bi bi-pencil-square" style="cursor: pointer;" onclick="toggleAllActions()"></i>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in records %}
-                    <tr>
-                        {% if user.role != 'farmer' %}
-                        <td>{{ r.barangay_name }}</td>
-                        <td>{{ r.farmer_name }}</td>
-                        {% endif %}
-                        <td>{{ r.batch_name }}</td>
-                        <td>{{ r.due_date if r.due_date else 'Not Set' }}</td>
-                        <td>{{ r.date_planted.strftime('%Y-%m-%d') if r.date_planted else 'N/A' }}</td>
-                        <td>{{ r.date_harvested.strftime('%Y-%m-%d') if r.date_harvested else 'N/A' }}</td>
-                        <td>{{ r.date_dried.strftime('%Y-%m-%d') if r.date_dried else 'N/A' }}</td>
-                        <td>{{ r.initial_weight }}</td>
-                        <td>{{ r.final_weight }}</td>
-                        <td>
-                            <div class="actions" style="display: none;">
-                                <a href="{{ url_for('views.edit_record', record_id=r.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ url_for('views.delete_record', record_id=r.id) }}" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-dark btn-sm">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-center">No records found.</p>
-        {% endif %}
-
-        <!-- Add Record Button for Barangay and Farmer -->
-        {% if user.is_authenticated and (user.role == 'barangay' or user.role == 'farmer') %}
-        <div class="d-flex justify-content-end mt-4">
-           {% if user.role == 'barangay' %}
-             <!-- Barangay users go directly to add_record, will show dropdown -->
-             <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
-                <i class="bi bi-plus-circle me-1"></i> Add New Record
-             </a>
-           {% elif user.role == 'farmer' %}
-             <!-- Farmers also go directly to add_record, farmer_id handled implicitly -->
-             <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
-                 <i class="bi bi-plus-circle me-1"></i> Add New Record
-             </a>
-           {% endif %}
-        </div>
-        {% endif %}
-    </div>
+  {% if records %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% if user.role != 'farmer' %}
+          <th>Barangay</th>
+          <th>Farmer Name</th>
+          {% endif %}
+          <th>Batch Name</th>
+          <th>Due Date</th>
+          <th>Date Planted</th>
+          <th>Date Harvested</th>
+          <th>Date Dried</th>
+          <th>Initial Weight (kg)</th>
+          <th>Final Weight (kg) (Yield)</th>
+          <th>
+            <i class="bi bi-pencil-square" style="cursor: pointer;" onclick="toggleAllActions()"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          {% if user.role != 'farmer' %}
+          <td>{{ r.barangay_name }}</td>
+          <td>{{ r.farmer_name }}</td>
+          {% endif %}
+          <td>{{ r.batch_name }}</td>
+          <td>{{ r.due_date if r.due_date else 'Not Set' }}</td>
+          <td>{{ r.date_planted.strftime('%Y-%m-%d') if r.date_planted else 'N/A' }}</td>
+          <td>{{ r.date_harvested.strftime('%Y-%m-%d') if r.date_harvested else 'N/A' }}</td>
+          <td>{{ r.date_dried.strftime('%Y-%m-%d') if r.date_dried else 'N/A' }}</td>
+          <td>{{ r.initial_weight }}</td>
+          <td>{{ r.final_weight }}</td>
+          <td>
+            <div class="actions" style="display: none;">
+              <a href="{{ url_for('views.edit_record', record_id=r.id) }}" class="btn btn-warning btn-sm">Edit</a>
+              <form action="{{ url_for('views.delete_record', record_id=r.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-dark btn-sm">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-center">No records found.</p>
+  {% endif %}
 </div>
 
 <!-- Add Record Modal -->

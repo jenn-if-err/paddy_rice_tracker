@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 from .models import DryingRecord, Farmer
 from .extensions import db
@@ -46,7 +46,6 @@ def dashboard():
                                view_type='batch_bar') # New view_type for farmer dashboard
     else:
         # Should not happen
-        flash("Unknown user role.", "error")
         return redirect(url_for('auth.login'))
 
 
@@ -94,13 +93,10 @@ def api_sync():
 @views.route("/farmers", methods=["GET"])
 @login_required
 def farmers():
-    # Only barangay users should access this
     if not hasattr(current_user, "role") or current_user.role != "barangay":
-        flash("Unauthorized access.", "error")
         return redirect(url_for("views.dashboard"))
 
     farmer_list = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
-    print(f"Farmers fetched: {[f'{farmer.first_name} {farmer.last_name}' for farmer in farmer_list]}")  # Debugging line
     return render_template("farmers.html", farmers=farmer_list, user=current_user)
 
 
@@ -108,18 +104,15 @@ def farmers():
 @login_required
 def add_farmer():
     if not hasattr(current_user, "role") or current_user.role != "barangay":
-        flash("Unauthorized access.", "error")
         return redirect(url_for("views.dashboard"))
 
     first_name = request.form.get("first_name")
     middle_name = request.form.get("middle_name")
     last_name = request.form.get("last_name")
-
     username = request.form.get("username")
     password = request.form.get("password")
 
     if Farmer.query.filter_by(username=username).first():
-        flash("Username already exists.", "error")
         return redirect(url_for("views.farmers"))
 
     new_farmer = Farmer(
@@ -134,7 +127,6 @@ def add_farmer():
 
     db.session.add(new_farmer)
     db.session.commit()
-    flash("Farmer added successfully!", "success")
     return redirect(url_for("views.farmers"))
 
 
@@ -158,9 +150,7 @@ def records():
     else:
         # Unknown role
         records = []
-        flash("Cannot display records for unknown user role.", "error")
 
-    # Pass user object which now consistently has .role and .full_name
     return render_template('records.html', records=records, user=current_user)
 
 
@@ -168,56 +158,39 @@ def records():
 @login_required
 def add_record():
     if current_user.role not in ['barangay', 'farmer']:
-        flash("You are not authorized to add records.", "error")
         if hasattr(current_user, 'role'):
-             return redirect(url_for('views.barangay_dashboard'))
-        else: 
-             return redirect(url_for('auth.login')) 
+            return redirect(url_for('views.barangay_dashboard'))
+        else:
+            return redirect(url_for('auth.login'))
 
-    farmers = None # Initialize farmers list
+    farmers = None
     
-    # --- Logic for GET Request --- 
-    # No need to check for pre-selected farmer_id anymore for GET
-    # Always fetch farmers list if user is barangay
     if current_user.role == 'barangay':
         farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
 
-    # --- Logic for POST Request (remains the same - uses form data) ---
     if request.method == 'POST':
-        # Get farmer_id from the submitted form (select for barangay, hidden for farmer)
-        record_farmer_id_str = request.form.get('farmer_id') 
+        record_farmer_id_str = request.form.get('farmer_id')
 
-        # Determine target farmer based on who is submitting and the submitted ID
         if current_user.role == 'farmer':
-             if not record_farmer_id_str or record_farmer_id_str != str(current_user.id):
-                  flash("Farmer ID mismatch. Cannot add record.", "error")
-                  return redirect(url_for('views.records')) 
-             record_farmer_id = current_user.id
-             target_farmer = current_user
+            if not record_farmer_id_str or record_farmer_id_str != str(current_user.id):
+                return redirect(url_for('views.records'))
+            record_farmer_id = current_user.id
+            target_farmer = current_user
         elif current_user.role == 'barangay':
             if not record_farmer_id_str:
-                 flash("Please select a farmer from the dropdown.", "error") # Updated flash message
-                 # Re-fetch farmers list for dropdown re-render
-                 farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
-                 # Render the form again, passing farmers list
-                 return render_template('add_record.html', farmers=farmers, user=current_user)
+                farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                return render_template('add_record.html', farmers=farmers, user=current_user)
             
             try:
                 record_farmer_id = int(record_farmer_id_str)
                 target_farmer = Farmer.query.get(record_farmer_id)
                 if not target_farmer or target_farmer.barangay_name != current_user.barangay_name:
-                    flash("Invalid farmer selected or farmer not in your barangay.", "error")
                     farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
                     return render_template('add_record.html', farmers=farmers, user=current_user)
             except (ValueError, TypeError):
-                 flash("Invalid farmer ID format submitted.", "error")
-                 farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
-                 return render_template('add_record.html', farmers=farmers, user=current_user)
-        else:
-            flash("Unauthorized role for record submission.", "error")
-            return redirect(url_for('views.records'))
+                farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                return render_template('add_record.html', farmers=farmers, user=current_user)
 
-        # ... (rest of POST logic: fetching farmer details, common fields, creating record) ...
         record_farmer_name = target_farmer.full_name
         record_barangay_name = target_farmer.barangay_name
         batch_name = request.form['batch_name']
@@ -244,13 +217,10 @@ def add_record():
         )
         db.session.add(new_record)
         db.session.commit()
-        flash("Record added successfully!", "success")
         return redirect(url_for('views.records'))
 
-    # --- Render Template for GET Request ---
-    # No need to pass selected_farmer_id or selected_farmer anymore
     return render_template('add_record.html',
-                           farmers=farmers, # Pass farmer list if user is barangay
+                           farmers=farmers,
                            user=current_user)
 
 @views.route('/barangay_dashboard')
@@ -315,7 +285,6 @@ def barangay_dashboard():
 @login_required
 def barangay_analytics():
     if current_user.role != 'barangay':
-        flash("Unauthorized access.", "error")
         return redirect(url_for('views.dashboard'))
 
     time_period = request.args.get('period', 'month') # Default to month
@@ -361,7 +330,6 @@ def barangay_analytics():
 @login_required
 def farmer_analytics():
     if current_user.role != 'farmer':
-        flash("Unauthorized access.", "error")
         # Redirect non-farmers appropriately
         if hasattr(current_user, 'role') and current_user.role in ['municipal', 'barangay']:
              return redirect(url_for('views.barangay_dashboard'))
@@ -426,7 +394,6 @@ def edit_record(record_id):
         record.date_harvested = datetime.strptime(request.form.get('date_harvested'), '%Y-%m-%d').date() if request.form.get('date_harvested') else None
         record.date_dried = datetime.strptime(request.form.get('date_dried'), '%Y-%m-%d').date() if request.form.get('date_dried') else None
         db.session.commit()
-        flash('Record updated successfully!', 'success')
         return redirect(url_for('views.records'))
     return render_template('edit_record.html', record=record)
 
@@ -436,7 +403,6 @@ def delete_record(record_id):
     record = DryingRecord.query.get_or_404(record_id)
     db.session.delete(record)
     db.session.commit()
-    flash('Record deleted successfully!', 'success')
     return redirect(url_for('views.records'))
 
 @views.route('/analytics')
@@ -475,5 +441,4 @@ def analytics():
                                view_type=view_type,
                                user=current_user)
     else:
-        flash("Unauthorized access", "error")
         return redirect(url_for('views.dashboard'))
