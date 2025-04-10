@@ -42,6 +42,7 @@
     /* Sidebar nav styling */
     .nav-link {
       padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
     }
     
     /* Custom dark green text color */
@@ -54,6 +55,13 @@
       background-color: #f8f9fa;
       border-left: 4px solid #355b25;
       padding-left: calc(1rem - 4px); /* Adjust padding to account for border */
+      transform: translateX(4px);
+    }
+
+    /* Hover effect for nav items */
+    .nav-link:hover {
+      background-color: #f8f9fa;
+      transform: translateX(4px);
     }
 
   </style>
@@ -63,57 +71,61 @@
 <body class="bg-light">
 
   <!-- Sidebar -->
-  <nav class="d-flex flex-column bg-white shadow-sm p-3 vh-100" 
+  <nav class="d-flex flex-column bg-white shadow-sm vh-100" 
        style="width: 250px; position: fixed; top: 0; left: 0; bottom: 0; z-index: 1000;">
     <!-- Logo Only -->
-    <div class="d-flex align-items-center justify-content-center mb-4">
-      <img src="{{ url_for('static', filename='logo.svg') }}" alt="PaddyTracker Logo" class="img-fluid" style="max-height: 170px;">
+    <div class="p-3" style="flex-shrink: 0;">
+      <div class="d-flex align-items-center justify-content-center">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="PaddyTracker Logo" class="img-fluid" style="max-height: 170px;">
+      </div>
     </div>
 
     <!-- Navigation -->
-    <ul class="nav flex-column" style="overflow-y: auto;">
-      <li class="nav-item">
-        <a href="{{ url_for('views.dashboard') }}" class="nav-link {% if request.path == '/' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-grid me-2"></i> Dashboard
-        </a>
-      </li>
+    <div class="p-3" style="flex-shrink: 0;">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="{{ url_for('views.dashboard') }}" class="nav-link {% if request.path == '/' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-grid me-2"></i> Dashboard
+          </a>
+        </li>
 
-      <!-- Records Tab -->
-      <li class="nav-item">
-        <a href="{{ url_for('views.records') }}" class="nav-link {% if request.path == '/records' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-card-list me-2"></i> Records
-        </a>
-      </li>
+        <!-- Records Tab -->
+        <li class="nav-item">
+          <a href="{{ url_for('views.records') }}" class="nav-link {% if request.path == '/records' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-card-list me-2"></i> Records
+          </a>
+        </li>
 
-      {% if current_user.is_authenticated and current_user.role == 'barangay' %}
-      <li class="nav-item">
-        <a href="{{ url_for('views.farmers') }}" class="nav-link {% if request.path == '/farmers' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-people me-2"></i> Farmers
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="{{ url_for('views.barangay_analytics') }}" class="nav-link {% if request.path == '/barangay_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-graph-up me-2"></i> Analytics
-        </a>
-      </li>
-      {% endif %}
-      
-      {% if current_user.is_authenticated and current_user.role == 'farmer' %}
-      <li class="nav-item">
-        <a href="{{ url_for('views.farmer_analytics') }}" class="nav-link {% if request.path == '/farmer_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-graph-up me-2"></i> Analytics
-        </a>
-      </li>
-      {% endif %}
+        {% if current_user.is_authenticated and current_user.role == 'barangay' %}
+        <li class="nav-item">
+          <a href="{{ url_for('views.farmers') }}" class="nav-link {% if request.path == '/farmers' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-people me-2"></i> Farmers
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('views.barangay_analytics') }}" class="nav-link {% if request.path == '/barangay_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-graph-up me-2"></i> Analytics
+          </a>
+        </li>
+        {% endif %}
+        
+        {% if current_user.is_authenticated and current_user.role == 'farmer' %}
+        <li class="nav-item">
+          <a href="{{ url_for('views.farmer_analytics') }}" class="nav-link {% if request.path == '/farmer_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-graph-up me-2"></i> Analytics
+          </a>
+        </li>
+        {% endif %}
 
-      {% if current_user.is_authenticated and current_user.role == 'municipal' %}
-      <li class="nav-item">
-        <a href="{{ url_for('views.analytics') }}" class="nav-link {% if request.path == '/analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
-          <i class="bi bi-graph-up me-2"></i> Analytics
-        </a>
-      </li>
-      {% endif %}
-    </ul>
+        {% if current_user.is_authenticated and current_user.role == 'municipal' %}
+        <li class="nav-item">
+          <a href="{{ url_for('views.analytics') }}" class="nav-link {% if request.path == '/analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
+            <i class="bi bi-graph-up me-2"></i> Analytics
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
   </nav>
 
   <!-- Main Content -->
