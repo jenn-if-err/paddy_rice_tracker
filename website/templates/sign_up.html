@@ -1,58 +1,188 @@
-{% extends "base.html" %} 
-{% block title %}Barangay Sign Up{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up | Paddy Rice Tracker</title>
 
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow p-4">
-      <h2 class="text-center mb-4">Register as Barangay Staff</h2>
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <!-- For Safari on iOS -->
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.svg') }}">
 
-      <form method="POST">
-        <!-- Email -->
-        <div class="mb-3">
-          <label for="email" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-        </div>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-        <!-- Municipality -->
-        <div class="mb-3">
-          <label for="municipality" class="form-label">Municipality</label>
-          <input type="text" class="form-control" id="municipality" name="municipality" required>
-        </div>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        <!-- Barangay Name -->
-        <div class="mb-3">
-          <label for="barangayName" class="form-label">Barangay Name</label>
-          <input type="text" class="form-control" id="barangayName" name="barangay_name" required>
-        </div>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-        <!-- Password -->
-        <div class="mb-3">
-          <label for="password1" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password1" name="password1" required>
-        </div>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+    }
 
-        <!-- Confirm Password -->
-        <div class="mb-4">
-          <label for="password2" class="form-label">Confirm Password</label>
-          <input type="password" class="form-control" id="password2" name="password2" required>
-        </div>
+    .logo-img {
+      max-width: 300px;
+    }
 
-        <div class="d-grid">
-          <button type="submit" class="btn btn-success">Create Account</button>
-        </div>
-      </form>
+    .signup-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      <!-- Municipal Link -->
-      <div class="text-center mt-4">
-        <p>Are you from the Municipal Office?</p>
-        <a href="{{ url_for('auth.sign_up_municipal') }}" class="btn btn-outline-primary">Sign Up as Municipal</a>
+    .signup-box {
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .form-control {
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    .btn-green {
+      background-color: #355B25;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-green:hover {
+      background-color: #2b4a1d;
+    }
+
+    .left-logo-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ffffff;
+    }
+
+    .eye-icon {
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #888;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .text-link {
+      color: #355B25;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .text-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid signup-container px-4 px-md-5">
+    <div class="row w-100">
+      <!-- Left Logo with Title -->
+      <div class="col-md-6 d-none d-md-flex left-logo-col flex-column">
+        <h2 class="text-center mb-4 fw-bold">Create your Barangay Account</h2>
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Paddy Rice Logo" class="logo-img">
       </div>
 
-      <div class="text-center mt-3">
-        <small>Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></small>
+      <!-- Right Signup Form -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="signup-box">
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <form method="POST">
+            <!-- Email -->
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
+              <label for="email">Email address</label>
+            </div>
+
+            <!-- Municipality -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="municipality" name="municipality" placeholder="Municipality" required>
+              <label for="municipality">Municipality</label>
+            </div>
+
+            <!-- Barangay Name -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="barangayName" name="barangay_name" placeholder="Barangay Name" required>
+              <label for="barangayName">Barangay Name</label>
+            </div>
+
+            <!-- Password -->
+            <div class="input-group mb-3">
+              <div class="form-floating">
+                <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" required>
+                <label for="password1">Password</label>
+              </div>
+              <span class="eye-icon" onclick="togglePasswordVisibility('password1', this)">
+                <i class="bi bi-eye-slash"></i>
+              </span>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-group mb-4">
+              <div class="form-floating">
+                <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm Password" required>
+                <label for="password2">Confirm Password</label>
+              </div>
+              <span class="eye-icon" onclick="togglePasswordVisibility('password2', this)">
+                <i class="bi bi-eye-slash"></i>
+              </span>
+            </div>
+
+            <button type="submit" class="btn btn-green w-100">Create Account</button>
+          </form>
+
+          <!-- Municipal Link -->
+          <div class="text-center mt-4">
+            <p class="mb-2">Are you from the Municipal Office?</p>
+            <a href="{{ url_for('auth.sign_up_municipal') }}" class="btn btn-outline-success">Sign Up as Municipal</a>
+          </div>
+
+          <div class="text-center mt-3">
+            <small>Already registered? <a href="{{ url_for('auth.login') }}" class="text-link">Log in</a></small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Toggle Password Visibility -->
+  <script>
+    function togglePasswordVisibility(inputId, iconElement) {
+      const input = document.getElementById(inputId);
+      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+      input.setAttribute('type', type);
+      
+      const icon = iconElement.querySelector('i');
+      icon.classList.toggle('bi-eye');
+      icon.classList.toggle('bi-eye-slash');
+    }
+  </script>
+</body>
+</html>
