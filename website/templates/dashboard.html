@@ -15,7 +15,7 @@
             {% elif user.role == 'barangay' %}
             Monthly Yield Statistics
             {% elif user.role == 'farmer' %}
-            Yield Statistics by Batch
+            Yield Statistics
             {% else %}
             Dashboard
             {% endif %}
@@ -39,16 +39,28 @@
             {
                 label: 'Pre-drying',
                 data: preDryingData,
-                backgroundColor: 'rgba(0, 128, 0, 0.3)',
-                borderColor: 'rgba(0, 128, 0, 0.6)',
-                borderWidth: 1
+                backgroundColor: 'rgba(53, 91, 37, 0.2)',
+                borderColor: 'rgba(53, 91, 37, 0.4)',
+                borderWidth: 1,
+                borderRadius: {
+                    topLeft: 6,
+                    topRight: 6,
+                    bottomLeft: 6,
+                    bottomRight: 6
+                }
             },
             {
                 label: 'Post-drying',
                 data: postDryingData,
-                backgroundColor: 'rgba(255, 255, 0, 0.9)',
-                borderColor: 'rgba(255, 215, 0, 1)',
-                borderWidth: 1
+                backgroundColor: '#355b25',
+                borderColor: '#355b25',
+                borderWidth: 1,
+                borderRadius: {
+                    topLeft: 6,
+                    topRight: 6,
+                    bottomLeft: 6,
+                    bottomRight: 6
+                }
             }
         ]
     };
@@ -75,7 +87,7 @@
             },
             plugins: {
                 title: {
-                    display: true,
+                    display: false,
                     text: '{% if is_municipal %}Total Yield by Barangay{% elif user.role == "barangay" %}Monthly Yield{% elif user.role == "farmer" %}Yield by Batch{% else %}Chart{% endif %}'
                 }
             }

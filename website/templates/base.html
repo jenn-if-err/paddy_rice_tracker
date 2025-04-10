@@ -14,11 +14,11 @@
   <style>
     /* Global Link Styling */
     a {
-      color: #198754; /* Bootstrap success green */
+      color: #6c757d; /* Bootstrap secondary/gray */
       text-decoration: none; /* Optional: remove underline */
     }
     a:hover {
-      color: #ffc107; /* Bootstrap warning yellow */
+      color: #355b25; /* Dark green */
       /* text-decoration: underline; */ /* Optional: underline on hover */
     }
     /* Ensure dropdown items don't inherit global link color */
@@ -31,7 +31,24 @@
     }
     .dropdown-item.active {
          color: #fff;
-         background-color: #198754; /* Green for active dropdown */
+         background-color: #355b25; /* Dark green for active dropdown */
+    }
+    
+    /* Sidebar nav styling */
+    .nav-link {
+      padding: 0.5rem 1rem;
+    }
+    
+    /* Custom dark green text color */
+    .text-dark-green {
+      color: #355b25 !important;
+    }
+    
+    /* Sidebar active item styling */
+    .nav-link.active {
+      background-color: #f8f9fa;
+      border-left: 4px solid #355b25;
+      padding-left: calc(1rem - 4px); /* Adjust padding to account for border */
     }
 
   </style>
@@ -50,43 +67,43 @@
 
     <!-- Navigation -->
     <ul class="nav flex-column" style="overflow-y: auto;">
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('views.dashboard') }}" class="nav-link {% if request.path == '/' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.dashboard') }}" class="nav-link {% if request.path == '/' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-grid me-2"></i> Dashboard
         </a>
       </li>
 
       <!-- Records Tab -->
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('views.records') }}" class="nav-link {% if request.path == '/records' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.records') }}" class="nav-link {% if request.path == '/records' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-card-list me-2"></i> Records
         </a>
       </li>
 
       {% if current_user.is_authenticated and current_user.role == 'barangay' %}
-      <li class="nav-item mt-2">
-        <a href="{{ url_for('views.farmers') }}" class="nav-link {% if request.path == '/farmers' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.farmers') }}" class="nav-link {% if request.path == '/farmers' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-people me-2"></i> Farmers
         </a>
       </li>
-      <li class="nav-item mt-2">
-        <a href="{{ url_for('views.barangay_analytics') }}" class="nav-link {% if request.path == '/barangay_analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.barangay_analytics') }}" class="nav-link {% if request.path == '/barangay_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-graph-up me-2"></i> Analytics
         </a>
       </li>
       {% endif %}
       
       {% if current_user.is_authenticated and current_user.role == 'farmer' %}
-      <li class="nav-item mt-2">
-        <a href="{{ url_for('views.farmer_analytics') }}" class="nav-link {% if request.path == '/farmer_analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.farmer_analytics') }}" class="nav-link {% if request.path == '/farmer_analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-graph-up me-2"></i> Analytics
         </a>
       </li>
       {% endif %}
 
       {% if current_user.is_authenticated and current_user.role == 'municipal' %}
-      <li class="nav-item mt-2">
-        <a href="{{ url_for('views.analytics') }}" class="nav-link {% if request.path == '/analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+      <li class="nav-item">
+        <a href="{{ url_for('views.analytics') }}" class="nav-link {% if request.path == '/analytics' %}active text-dark-green{% else %}text-secondary{% endif %}">
           <i class="bi bi-graph-up me-2"></i> Analytics
         </a>
       </li>
@@ -108,7 +125,7 @@
 
         <div class="dropdown">
           <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="bi {{ role_icon }} fs-4 me-2 text-success"></i>
+            <i class="bi {{ role_icon }} fs-4 me-2 text-dark-green"></i>
             <span class="fw-semibold">{{ current_user.full_name or "User" }}</span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
