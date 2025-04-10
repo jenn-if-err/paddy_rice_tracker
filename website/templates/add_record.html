@@ -7,8 +7,8 @@
     <div class="card p-4 shadow">
         <h2 class="text-center mb-4">Add New Record</h2>
         <form method="POST" action="{{ url_for('views.add_record') }}">
-            <input type="hidden" name="farmer_id" value="{{ request.args.get('farmer_id') }}">
-            <input type="hidden" name="barangay_name" value="{{ current_user.barangay_name }}">
+            <input type="hidden" name="barangay_name" value="{{ user.barangay_name }}">
+            
             <div class="mb-3">
                 <label for="batch_name" class="form-label">Batch Name</label>
                 <input type="text" class="form-control" id="batch_name" name="batch_name" required>
@@ -21,6 +21,31 @@
                 <label for="final_weight" class="form-label">Final Weight (kg)</label>
                 <input type="number" class="form-control" id="final_weight" name="final_weight" step="any" required>
             </div>
+            
+            <!-- Farmer Name Handling -->
+            {% if user.role == 'barangay' %}
+                <div class="mb-3">
+                    <label for="farmer_id" class="form-label">Farmer Name</label>
+                    <!-- Always show dropdown for barangay users -->
+                    <select class="form-control" id="farmer_id" name="farmer_id" required>
+                        <option value="">Select Farmer</option>
+                        {% for farmer in farmers %}
+                        <option value="{{ farmer.id }}">{{ farmer.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% elif user.role == 'farmer' %}
+                <!-- Farmer adding for themselves, pass ID via hidden input -->
+                <input type="hidden" name="farmer_id" value="{{ user.id }}">
+            {% endif %}
+
+            <!-- Barangay Name (Readonly) -->
+            <div class="mb-3">
+                <label for="barangay_name" class="form-label">Barangay</label>
+                <input type="text" class="form-control" id="barangay_name" name="barangay_name" value="{{ user.barangay_name }}" readonly>
+            </div>
+
+            <!-- Other Optional Fields -->
             <div class="mb-3">
                 <label for="due_date" class="form-label">Due Date</label>
                 <input type="date" class="form-control" id="due_date" name="due_date">

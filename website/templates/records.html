@@ -24,8 +24,10 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        {% if user.role != 'farmer' %}
                         <th>Barangay</th>
                         <th>Farmer Name</th>
+                        {% endif %}
                         <th>Batch Name</th>
                         <th>Due Date</th>
                         <th>Date Planted</th>
@@ -41,8 +43,10 @@
                 <tbody>
                     {% for r in records %}
                     <tr>
+                        {% if user.role != 'farmer' %}
                         <td>{{ r.barangay_name }}</td>
                         <td>{{ r.farmer_name }}</td>
+                        {% endif %}
                         <td>{{ r.batch_name }}</td>
                         <td>{{ r.due_date if r.due_date else 'Not Set' }}</td>
                         <td>{{ r.date_planted.strftime('%Y-%m-%d') if r.date_planted else 'N/A' }}</td>
@@ -68,11 +72,19 @@
         {% endif %}
 
         <!-- Add Record Button for Barangay and Farmer -->
-        {% if current_user.is_authenticated and (current_user.role == 'barangay' or current_user.role == 'farmer') %}
+        {% if user.is_authenticated and (user.role == 'barangay' or user.role == 'farmer') %}
         <div class="d-flex justify-content-end mt-4">
-            <a href="{{ url_for('views.select_farmer') }}" class="btn btn-success">
+           {% if user.role == 'barangay' %}
+             <!-- Barangay users go directly to add_record, will show dropdown -->
+             <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
                 <i class="bi bi-plus-circle me-1"></i> Add New Record
-            </a>
+             </a>
+           {% elif user.role == 'farmer' %}
+             <!-- Farmers also go directly to add_record, farmer_id handled implicitly -->
+             <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
+                 <i class="bi bi-plus-circle me-1"></i> Add New Record
+             </a>
+           {% endif %}
         </div>
         {% endif %}
     </div>

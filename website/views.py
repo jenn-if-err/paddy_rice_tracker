@@ -125,17 +125,26 @@ def add_farmer():
 @views.route('/records')
 @login_required
 def records():
-    if hasattr(current_user, 'role'):
-        if current_user.role == 'barangay':
-            records = DryingRecord.query \
-                .filter_by(barangay_name=current_user.barangay_name) \
-                .order_by(DryingRecord.timestamp.desc()).all()
-        else:
-            # Municipal users can see all records
-            records = DryingRecord.query.order_by(DryingRecord.timestamp.desc()).all()
+    # Check role directly
+    if current_user.role == 'municipal':
+        # Municipal users see all records
+        records = DryingRecord.query.order_by(DryingRecord.timestamp.desc()).all()
+    elif current_user.role == 'barangay':
+        # Barangay users see records for their barangay
+        records = DryingRecord.query \
+            .filter_by(barangay_name=current_user.barangay_name) \
+            .order_by(DryingRecord.timestamp.desc()).all()
+    elif current_user.role == 'farmer':
+        # Farmers see only their own records
+        records = DryingRecord.query \
+            .filter_by(farmer_id=current_user.id) \
+            .order_by(DryingRecord.timestamp.desc()).all()
     else:
-        records = DryingRecord.query.filter_by(farmer_id=current_user.id).order_by(DryingRecord.timestamp.desc()).all()
+        # Unknown role
+        records = []
+        flash("Cannot display records for unknown user role.", "error")
 
+    # Pass user object which now consistently has .role and .full_name
     return render_template('records.html', records=records, user=current_user)
 
 
@@ -144,78 +153,89 @@ def records():
 def add_record():
     if current_user.role not in ['barangay', 'farmer']:
         flash("You are not authorized to add records.", "error")
-        return redirect(url_for('views.dashboard'))
+        if hasattr(current_user, 'role'):
+             return redirect(url_for('views.barangay_dashboard'))
+        else: 
+             return redirect(url_for('auth.login')) 
 
-    # Fetch the farmers for the current barangay if logged in as barangay
+    farmers = None # Initialize farmers list
+    
+    # --- Logic for GET Request --- 
+    # No need to check for pre-selected farmer_id anymore for GET
+    # Always fetch farmers list if user is barangay
     if current_user.role == 'barangay':
         farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
-    else:
-        farmers = Farmer.query.all()  # For farmers, display all of them
 
-    print(f"Farmers available: {[f'{farmer.first_name} {farmer.last_name}' for farmer in farmers]}")  # Debugging line
-
+    # --- Logic for POST Request (remains the same - uses form data) ---
     if request.method == 'POST':
+        # Get farmer_id from the submitted form (select for barangay, hidden for farmer)
+        record_farmer_id_str = request.form.get('farmer_id') 
+
+        # Determine target farmer based on who is submitting and the submitted ID
+        if current_user.role == 'farmer':
+             if not record_farmer_id_str or record_farmer_id_str != str(current_user.id):
+                  flash("Farmer ID mismatch. Cannot add record.", "error")
+                  return redirect(url_for('views.records')) 
+             record_farmer_id = current_user.id
+             target_farmer = current_user
+        elif current_user.role == 'barangay':
+            if not record_farmer_id_str:
+                 flash("Please select a farmer from the dropdown.", "error") # Updated flash message
+                 # Re-fetch farmers list for dropdown re-render
+                 farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                 # Render the form again, passing farmers list
+                 return render_template('add_record.html', farmers=farmers, user=current_user)
+            
+            try:
+                record_farmer_id = int(record_farmer_id_str)
+                target_farmer = Farmer.query.get(record_farmer_id)
+                if not target_farmer or target_farmer.barangay_name != current_user.barangay_name:
+                    flash("Invalid farmer selected or farmer not in your barangay.", "error")
+                    farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                    return render_template('add_record.html', farmers=farmers, user=current_user)
+            except (ValueError, TypeError):
+                 flash("Invalid farmer ID format submitted.", "error")
+                 farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                 return render_template('add_record.html', farmers=farmers, user=current_user)
+        else:
+            flash("Unauthorized role for record submission.", "error")
+            return redirect(url_for('views.records'))
+
+        # ... (rest of POST logic: fetching farmer details, common fields, creating record) ...
+        record_farmer_name = target_farmer.full_name
+        record_barangay_name = target_farmer.barangay_name
         batch_name = request.form['batch_name']
         initial_weight = request.form['initial_weight']
         final_weight = request.form['final_weight']
-        farmer_id = request.form['farmer_id']  # Get selected farmer's ID
-        barangay_name = current_user.barangay_name  # Automatically populated from logged-in user
-
         temperature = request.form.get('temperature', 0)
         humidity = request.form.get('humidity', 0)
         sensor_value = request.form.get('sensor_value', 0)
         initial_moisture = request.form.get('initial_moisture', 0)
         final_moisture = request.form.get('final_moisture', 0)
         drying_time = request.form.get('drying_time', '0')
-
-        # Fetch farmer name using farmer_id
-        farmer = Farmer.query.get(farmer_id)
-        farmer_name = f"{farmer.first_name} {farmer.last_name}" if farmer else "Unknown"
-
-        # Convert date strings to date objects
         due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else None
         date_planted = datetime.strptime(request.form.get('date_planted'), '%Y-%m-%d').date() if request.form.get('date_planted') else None
         date_harvested = datetime.strptime(request.form.get('date_harvested'), '%Y-%m-%d').date() if request.form.get('date_harvested') else None
         date_dried = datetime.strptime(request.form.get('date_dried'), '%Y-%m-%d').date() if request.form.get('date_dried') else None
 
-        # Create a new DryingRecord
         new_record = DryingRecord(
-            batch_name=batch_name,
-            initial_weight=initial_weight,
-            final_weight=final_weight,
-            temperature=temperature,
-            humidity=humidity,
-            sensor_value=sensor_value,
-            initial_moisture=initial_moisture,
-            final_moisture=final_moisture,
-            drying_time=drying_time,
-            farmer_id=farmer_id,  # Link the record to the selected farmer
-            farmer_name=farmer_name,  # Store farmer name
-            barangay_name=barangay_name,
-            user_id=current_user.id,  # Link the record to the logged-in user
-            due_date=due_date,
-            date_planted=date_planted,
-            date_harvested=date_harvested,
-            date_dried=date_dried
+            batch_name=batch_name, initial_weight=initial_weight, final_weight=final_weight,
+            temperature=temperature, humidity=humidity, sensor_value=sensor_value,
+            initial_moisture=initial_moisture, final_moisture=final_moisture, drying_time=drying_time,
+            farmer_id=record_farmer_id, farmer_name=record_farmer_name, barangay_name=record_barangay_name,
+            user_id=current_user.id, 
+            due_date=due_date, date_planted=date_planted, date_harvested=date_harvested, date_dried=date_dried
         )
-
         db.session.add(new_record)
         db.session.commit()
-
         flash("Record added successfully!", "success")
-        return redirect(url_for('views.dashboard'))  # Redirect to dashboard after adding the record
+        return redirect(url_for('views.records'))
 
-    return render_template('add_record.html', farmers=farmers)  # Pass farmers to the template
-
-@views.route('/select_farmer', methods=['GET'])
-@login_required
-def select_farmer():
-    if current_user.role != 'barangay':
-        flash("Unauthorized access.", "error")
-        return redirect(url_for("views.dashboard"))
-
-    farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
-    return render_template('select_farmer.html', farmers=farmers)
+    # --- Render Template for GET Request ---
+    # No need to pass selected_farmer_id or selected_farmer anymore
+    return render_template('add_record.html',
+                           farmers=farmers, # Pass farmer list if user is barangay
+                           user=current_user)
 
 @views.route('/barangay_dashboard')
 @login_required
