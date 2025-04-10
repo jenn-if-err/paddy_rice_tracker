@@ -11,7 +11,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-secret")
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "sqlite:///local.db")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://paddy_rice_tracker_db_user:2RX9usq562ns4fB04L8Y2tsJAVD1YTaV@dpg-cvrqgq6r433s73b1sbng-a/paddy_rice_tracker_db")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # ✅ Initialize Extensions
@@ -29,7 +29,6 @@ def create_app():
     # ✅ Import models after db is initialized!
     with app.app_context():
         from .models import User, Farmer, DryingRecord
-        db.create_all()
 
     # ✅ Login user loader
     @login_manager.user_loader
