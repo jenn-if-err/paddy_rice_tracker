@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Add Record{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow">
+        <h2 class="text-center mb-4">Add New Record</h2>
+        <form method="POST" action="{{ url_for('views.add_record') }}">
+            <input type="hidden" name="farmer_id" value="{{ request.args.get('farmer_id') }}">
+            <input type="hidden" name="barangay_name" value="{{ current_user.barangay_name }}">
+            <div class="mb-3">
+                <label for="batch_name" class="form-label">Batch Name</label>
+                <input type="text" class="form-control" id="batch_name" name="batch_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="initial_weight" class="form-label">Initial Weight (kg)</label>
+                <input type="number" class="form-control" id="initial_weight" name="initial_weight" step="any">
+            </div>
+            <div class="mb-3">
+                <label for="final_weight" class="form-label">Final Weight (kg)</label>
+                <input type="number" class="form-control" id="final_weight" name="final_weight" step="any" required>
+            </div>
+            <div class="mb-3">
+                <label for="due_date" class="form-label">Due Date</label>
+                <input type="date" class="form-control" id="due_date" name="due_date">
+            </div>
+            <div class="mb-3">
+                <label for="date_planted" class="form-label">Date Planted</label>
+                <input type="date" class="form-control" id="date_planted" name="date_planted">
+            </div>
+            <div class="mb-3">
+                <label for="date_harvested" class="form-label">Date Harvested</label>
+                <input type="date" class="form-control" id="date_harvested" name="date_harvested">
+            </div>
+            <div class="mb-3">
+                <label for="date_dried" class="form-label">Date Dried</label>
+                <input type="date" class="form-control" id="date_dried" name="date_dried">
+            </div>
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{{ url_for('views.records') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %} 

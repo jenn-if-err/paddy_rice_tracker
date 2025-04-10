@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Rice Yield Analytics (Post-Drying)</h2>
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('views.analytics', view='year') }}" class="btn btn-outline-success {% if view_type == 'year' %}active{% endif %}">Yearly</a>
+            <a href="{{ url_for('views.analytics', view='month') }}" class="btn btn-outline-success {% if view_type == 'month' %}active{% endif %}">Monthly</a>
+        </div>
+    </div>
+    <canvas id="analyticsChart" height="100"></canvas>
+</div>
+
+<script>
+    const analyticsData = {{ analytics_data|tojson }};
+    const labels = Object.keys(analyticsData);
+    const values = Object.values(analyticsData);
+
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: '{% if view_type == "year" %}Yearly{% else %}Monthly{% endif %} Rice Yield (Post-Drying) (kg)',
+            data: values,
+            fill: false,
+            borderColor: 'rgb(0, 128, 0)',
+            pointBackgroundColor: 'rgb(0, 128, 0)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(0, 128, 0)',
+            tension: 0.1
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: '{% if view_type == "year" %}Yearly{% else %}Monthly{% endif %} Rice Yield Trend (Post-Drying)'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '{% if view_type == "year" %}Year{% else %}Month{% endif %}'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 6
+                },
+                line: {
+                    borderWidth: 3
+                }
+            }
+        }
+    };
+
+    const analyticsChart = new Chart(
+        document.getElementById('analyticsChart'),
+        config
+    );
+</script>
+{% endblock %} 

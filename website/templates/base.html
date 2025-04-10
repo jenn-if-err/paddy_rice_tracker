@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Paddy Tracker{% endblock %}</title>
+
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex bg-light">
+
+  <!-- Sidebar -->
+  <nav class="d-flex flex-column bg-white shadow-sm p-3 vh-100" style="width: 250px;">
+    <!-- Logo Only -->
+    <div class="d-flex align-items-center justify-content-center mb-4">
+      <img src="{{ url_for('static', filename='paddy rice tracker.svg') }}" alt="PaddyTracker Logo" class="img-fluid" style="max-height: 170px;">
+    </div>
+
+    <!-- Navigation -->
+    <ul class="nav flex-column">
+      <li class="nav-item mb-2">
+        <a href="{{ url_for('views.barangay_dashboard') }}" class="nav-link {% if request.path == '/barangay_dashboard' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-grid me-2"></i> Dashboard
+        </a>
+      </li>
+
+      <!-- Records Tab -->
+      <li class="nav-item mb-2">
+        <a href="{{ url_for('views.records') }}" class="nav-link {% if request.path == '/records' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-card-list me-2"></i> Records
+        </a>
+      </li>
+
+      {% if current_user.is_authenticated and current_user.role == 'barangay' %}
+      <li class="nav-item mt-2">
+        <a href="{{ url_for('views.farmers') }}" class="nav-link {% if request.path == '/farmers' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-people me-2"></i> Farmers
+        </a>
+      </li>
+      {% endif %}
+
+      {% if current_user.is_authenticated and current_user.role == 'municipal' %}
+      <li class="nav-item mt-2">
+        <a href="{{ url_for('views.analytics') }}" class="nav-link {% if request.path == '/analytics' %}active text-warning fw-bold{% else %}text-success{% endif %}">
+          <i class="bi bi-graph-up me-2"></i> Analytics
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1 p-4">
+    <!-- Top Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div></div>
+      <div class="d-flex align-items-center">
+        {% set role_icon = {
+          'farmer': 'bi-person-circle',
+          'barangay': 'bi-house-door',
+          'municipal': 'bi-building'
+        }[current_user.role if current_user.is_authenticated and current_user.role in ['farmer', 'barangay', 'municipal'] else 'bi-person'] %}
+
+        <div class="dropdown">
+          <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi {{ role_icon }} fs-4 me-2 text-success"></i>
+            <span class="fw-semibold">{{ current_user.full_name or "User" }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    <!-- Removed flash message handling -->
+
+    <!-- Page Content -->
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  {% block javascript %}{% endblock %}
+</body>
+</html>

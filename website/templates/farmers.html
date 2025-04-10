@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Farmers{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="mb-4 fw-bold">Farmers - {{ current_user.barangay_name }}</h2>
+
+  <!-- Add Farmer Button -->
+  <div class="d-flex justify-content-end mb-3">
+    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFarmerModal">
+      <i class="bi bi-person-plus me-1"></i> Add Farmer
+    </a>
+  </div>
+
+  <!-- Farmers Table -->
+  {% if farmers %}
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>First Name</th>
+          <th>Middle Name</th>
+          <th>Last Name</th>
+          <th>Username</th>
+          <th>Barangay</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for farmer in farmers %}
+        <tr>
+          <td>{{ farmer.first_name }}</td>
+          <td>{{ farmer.middle_name or '' }}</td>
+          <td>{{ farmer.last_name }}</td>
+          <td>{{ farmer.username }}</td>
+          <td>{{ farmer.barangay_name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted">No farmers registered yet.</p>
+  {% endif %}
+</div>
+
+<!-- Add Farmer Modal -->
+<div class="modal fade" id="addFarmerModal" tabindex="-1" aria-labelledby="addFarmerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('views.add_farmer') }}">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="addFarmerModalLabel">Add New Farmer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="middle_name" class="form-label">Middle Name</label>
+            <input type="text" class="form-control" id="middle_name" name="middle_name">
+          </div>
+          <div class="mb-3">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
