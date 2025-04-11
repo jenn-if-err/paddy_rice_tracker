@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
-from .models import DryingRecord, Farmer
+from .models import DryingRecord, Farmer, Municipality, Barangay, User
 from .extensions import db
 from werkzeug.security import generate_password_hash
 from datetime import datetime
@@ -442,3 +442,20 @@ def analytics():
                                user=current_user)
     else:
         return redirect(url_for('views.dashboard'))
+
+@views.route('/municipality_dashboard/<int:municipality_id>')
+@login_required
+def municipality_dashboard(municipality_id):
+    municipality = Municipality.query.get(municipality_id)
+    barangays = Barangay.query.filter_by(municipality_id=municipality.id).all()
+    return render_template('dashboard.html', municipality=municipality, barangays=barangays)
+
+@views.route('/municipality_analytics/<int:municipality_id>')
+@login_required
+def municipality_analytics(municipality_id):
+    municipality = Municipality.query.get(municipality_id)
+    drying_records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == municipality.id).all()
+    return render_template('analytics.html', records=drying_records)
+
+
+

@@ -97,3 +97,16 @@ class DryingRecord(db.Model):
     farmer = db.relationship('Farmer', back_populates='records', foreign_keys=[farmer_id])
 
     due_date = db.Column(db.Date)
+
+class Municipality(db.Model):
+    __tablename__ = 'municipalities'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)  # <- Add unique
+    barangays = db.relationship('Barangay', backref='municipality', lazy=True)
+
+
+class Barangay(db.Model):
+    __tablename__ = 'barangays'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    municipality_id = db.Column(db.Integer, db.ForeignKey('municipalities.id'), nullable=False)

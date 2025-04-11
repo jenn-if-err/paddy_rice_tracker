@@ -110,7 +110,8 @@
             {% endif %}
           {% endwith %}
 
-          <form method="POST">
+          <form method="POST" action="{{ url_for('auth.signup_municipal') }}">  
+
             <!-- Email -->
             <div class="form-floating mb-3">
               <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
