@@ -25,8 +25,8 @@
           <th>Date Planted</th>
           <th>Date Harvested</th>
           <th>Date Dried</th>
-          <th>Initial Weight (kg)</th>
-          <th>Final Weight (kg) (Yield)</th>
+          <th>Harvested Weight</th>
+          <th>Post-Dried Weight</th>
           <th>
             <i class="bi bi-pencil-square" style="cursor: pointer;" onclick="toggleAllActions()"></i>
           </th>
@@ -44,8 +44,8 @@
           <td>{{ r.date_planted.strftime('%Y-%m-%d') if r.date_planted else 'N/A' }}</td>
           <td>{{ r.date_harvested.strftime('%Y-%m-%d') if r.date_harvested else 'N/A' }}</td>
           <td>{{ r.date_dried.strftime('%Y-%m-%d') if r.date_dried else 'N/A' }}</td>
-          <td>{{ r.initial_weight }}</td>
-          <td>{{ r.final_weight }}</td>
+          <td>{{ r.initial_weight }}kg</td>
+          <td>{{ r.final_weight }}kg</td>
           <td>
             <div class="actions" style="display: none;">
               <a href="{{ url_for('views.edit_record', record_id=r.id) }}" class="btn btn-warning btn-sm">Edit</a>
