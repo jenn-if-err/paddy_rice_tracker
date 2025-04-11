@@ -29,7 +29,7 @@ def dashboard():
                                monthly_data=barangay_data, 
                                user=current_user, 
                                is_municipal=True,
-                               view_type='barangay_bar')  # New view_type for municipal dashboard
+                               view_type='barangay_bar')  
     elif current_user.role == 'barangay':
         # Redirect barangay users to their specific dashboard view
         return redirect(url_for('views.barangay_dashboard'))
