@@ -115,7 +115,7 @@ def sign_up():
             new_user = User(
                 email=email,
                 role='barangay',
-                barangay_name=barangay_name,
+                barangay_id=barangay.id,
                 full_name="Barangay Officer",
                 password=generate_password_hash(password)
             )
@@ -161,10 +161,12 @@ def signup_municipal():
             else:
                 print(f"ℹ️ Municipality already exists: {municipality.name}")
 
+            # 🔧 Make sure to assign municipality_id here
             new_user = User(
                 email=email,
                 full_name=full_name,
                 role='municipal',
+                municipality_id=municipality.id,
                 password=generate_password_hash(password)
             )
             db.session.add(new_user)
@@ -181,6 +183,7 @@ def signup_municipal():
             return "Internal server error", 500
 
     return render_template('sign_up_municipal.html')
+
 
 # ✅ Logout
 @auth.route('/logout')
