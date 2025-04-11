@@ -131,3 +131,7 @@ def sign_up_municipal():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+@auth.route('/choose-role')
+def choose_role():
+    return render_template('role_selection.html')

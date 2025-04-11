@@ -18,6 +18,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.login_view = 'auth.login'
+    login_manager.login_message = ''
     login_manager.init_app(app)
 
     # ✅ Register Blueprints
