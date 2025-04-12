@@ -34,7 +34,7 @@ def create_app():
         from .models import User, Farmer, DryingRecord, Municipality, Barangay
         
         # Create all tables
-        #db.create_all()
+        db.create_all()
 
     # Login user loader
     @login_manager.user_loader
