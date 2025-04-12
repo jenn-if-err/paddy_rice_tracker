@@ -7,7 +7,7 @@ import os
 
 auth = Blueprint('auth', __name__)
 
-# 🔐 Google OAuth for Barangay & Municipal
+
 google_bp = make_google_blueprint(
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
@@ -15,7 +15,7 @@ google_bp = make_google_blueprint(
     redirect_to="auth.google_login"
 )
 
-# ✅ Google Login (Barangay & Municipal)
+
 @auth.route("/login/google")
 def google_login():
     if not google.authorized:
@@ -36,7 +36,6 @@ def google_login():
     login_user(user)
     return redirect(url_for("views.dashboard"))
 
-# ✅ Main Login Page
 @auth.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -64,27 +63,17 @@ def login():
 
     return render_template("login.html")
 
-# ✅ Barangay Sign-Up
+# Barangay Sign-Up
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     from .models import Municipality, Barangay, User
     from .extensions import db
     from werkzeug.security import generate_password_hash
 
-    # ✅ Insert demo municipality if DB is empty (for testing)
-    if Municipality.query.count() == 0:
-        demo = Municipality(name='Demo Town')
-        db.session.add(demo)
-        db.session.commit()
-        print("✅ Inserted demo municipality")
-
     municipalities = Municipality.query.all()
-    print("📦 Municipalities available for dropdown:", municipalities)
+    
 
     if request.method == 'POST':
-        print("📥 POST received to /barangay-signup-test")
-        print("Form data:", request.form)
-
         email = request.form.get('email')
         municipality_name = request.form.get('municipality', '').strip().title()
         barangay_name = request.form.get('barangay_name', '').strip().title()
@@ -97,9 +86,9 @@ def sign_up():
                 municipality = Municipality(name=municipality_name)
                 db.session.add(municipality)
                 db.session.commit()
-                print(f"✅ Created municipality: {municipality.name}")
+                print(f"Created municipality: {municipality.name}")
             else:
-                print(f"ℹ️ Municipality already exists: {municipality.name}")
+                print(f"ℹMunicipality already exists: {municipality.name}")
 
             # Get or create the barangay
             barangay = Barangay.query.filter_by(name=barangay_name, municipality_id=municipality.id).first()
@@ -107,9 +96,9 @@ def sign_up():
                 barangay = Barangay(name=barangay_name, municipality_id=municipality.id)
                 db.session.add(barangay)
                 db.session.commit()
-                print(f"✅ Created barangay: {barangay.name}")
+                print(f"Created barangay: {barangay.name}")
             else:
-                print(f"ℹ️ Barangay already exists: {barangay.name}")
+                print(f"ℹBarangay already exists: {barangay.name}")
 
             # Create the barangay user
             new_user = User(
@@ -121,7 +110,7 @@ def sign_up():
             )
             db.session.add(new_user)
             db.session.commit()
-            print("✅ Barangay user created")
+            print("Barangay user created")
 
             return redirect(url_for('auth.login'))
 
@@ -135,12 +124,10 @@ def sign_up():
     return render_template('sign_up.html', municipalities=municipalities)
 
 
-# ✅ Municipal Sign-Up
+# Municipal Sign-Up
 @auth.route('/sign-up-municipal', methods=['GET', 'POST'])
 def signup_municipal():
     if request.method == 'POST':
-        print("📥 POST received to /municipal-signup")
-        print(f"Form data: {request.form}")
 
         email = request.form.get('email')
         municipality_name = request.form.get('municipality', '').strip().title()
@@ -148,7 +135,7 @@ def signup_municipal():
         full_name = "Municipal Officer"
 
         if not municipality_name:
-            print("❌ No municipality provided.")
+            print("No municipality provided.")
             return "Please provide a municipality name", 400
 
         try:
@@ -157,11 +144,10 @@ def signup_municipal():
                 municipality = Municipality(name=municipality_name)
                 db.session.add(municipality)
                 db.session.commit()
-                print(f"✅ Municipality created: {municipality.name}")
+                print(f"Municipality created: {municipality.name}")
             else:
-                print(f"ℹ️ Municipality already exists: {municipality.name}")
+                print(f"Municipality already exists: {municipality.name}")
 
-            # 🔧 Make sure to assign municipality_id here
             new_user = User(
                 email=email,
                 full_name=full_name,
@@ -172,20 +158,19 @@ def signup_municipal():
             db.session.add(new_user)
             db.session.commit()
 
-            print("✅ Municipal user created.")
+            print("Municipal user created.")
             return redirect(url_for('auth.login'))
 
         except Exception as e:
             db.session.rollback()
             import traceback
             traceback.print_exc()
-            print(f"❌ Error during municipal signup: {e}")
+            print(f"Error during municipal signup: {e}")
             return "Internal server error", 500
 
     return render_template('sign_up_municipal.html')
 
 
-# ✅ Logout
 @auth.route('/logout')
 @login_required
 def logout():

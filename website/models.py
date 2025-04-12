@@ -70,8 +70,6 @@ class DryingRecord(db.Model):
     __tablename__ = 'drying_records'
 
     id = db.Column(db.Integer, primary_key=True)
-
-    # ✅ Unique UUID for sync and duplicate prevention
     uuid = db.Column(db.String(36), unique=True, nullable=True)
 
     timestamp = db.Column(db.DateTime(timezone=True), default=func.now())
