@@ -77,7 +77,6 @@ def api_sync():
                 final_moisture=record.get('final_moisture'),
                 drying_time=record.get('drying_time'),
                 final_weight=record.get('final_weight'),
-                shelf_life=record.get('shelf_life'),
                 date_planted=record.get('date_planted'),
                 date_harvested=record.get('date_harvested'),
                 date_dried=record.get('date_dried'),

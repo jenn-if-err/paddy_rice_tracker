@@ -84,7 +84,6 @@ class DryingRecord(db.Model):
     final_moisture = db.Column(db.Float, nullable=False)
     drying_time = db.Column(db.String(50), nullable=False)
     final_weight = db.Column(db.Float, nullable=False)
-    shelf_life = db.Column(db.String(50), nullable=True)
 
     date_dried = db.Column(db.Date)
     date_planted = db.Column(db.Date)
