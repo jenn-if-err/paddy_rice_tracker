@@ -16,8 +16,10 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          {% if user.role != 'farmer' %}
+          {% if user.role == 'municipal' %}
           <th>Barangay</th>
+          {% endif %}
+          {% if user.role != 'farmer' %}
           <th>Farmer Name</th>
           {% endif %}
           <th>Batch Name</th>
@@ -35,8 +37,10 @@
       <tbody>
         {% for r in records %}
         <tr>
+          {% if user.role == 'municipal' %}
+          <td>{{ r.barangay.name if r.barangay else 'Unknown Barangay' }}</td>
+          {% endif %}
           {% if user.role != 'farmer' %}
-          <td>{{ r.barangay_name }}</td>
           <td>{{ r.farmer_name }}</td>
           {% endif %}
           <td>{{ r.batch_name }}</td>
@@ -105,11 +109,6 @@
             <input type="text" class="form-control" id="farmer_name" name="farmer_name" value="{{ current_user.full_name }}" readonly>
           </div>
           {% endif %}
-
-          <div class="mb-3">
-            <label for="barangay_name" class="form-label">Barangay</label>
-            <input type="text" class="form-control" id="barangay_name" name="barangay_name" value="{{ current_user.barangay_name }}" readonly>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">Save</button>

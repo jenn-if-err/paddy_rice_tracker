@@ -143,7 +143,15 @@
         <div class="dropdown">
           <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
             <i class="bi {{ role_icon }} fs-4 me-2 text-dark-green"></i>
-            <span class="fw-semibold">{{ current_user.full_name or "User" }}</span>
+            <span class="fw-semibold">
+              {% if current_user.role == 'municipal' %}
+                {{ current_user.municipality.name if current_user.municipality else 'Unknown Municipality' }}
+              {% elif current_user.role == 'barangay' %}
+                {{ current_user.barangay.name if current_user.barangay else 'Unknown Barangay' }}
+              {% else %}
+                {{ current_user.full_name or "User" }}
+              {% endif %}
+            </span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>

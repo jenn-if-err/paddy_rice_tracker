@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
-from .models import DryingRecord, Farmer
+from .models import DryingRecord, Farmer, Municipality, Barangay, User
 from .extensions import db
 from werkzeug.security import generate_password_hash
 from datetime import datetime
@@ -8,44 +8,51 @@ from datetime import datetime
 
 views = Blueprint('views', __name__)
 
-# ==============================
-# 🔍 Dashboard Route (Role-based)
-# ==============================
 @views.route('/')
 @login_required
 def dashboard():
-    # Check role directly
     if current_user.role == 'municipal':
-        # Redirect municipal users to their specific dashboard view
-        return redirect(url_for('views.barangay_dashboard')) 
+        municipality = current_user.municipality
+        if not municipality:
+            print("Municipality not set for user")
+            return redirect(url_for('auth.login'))
+
+        barangays = Barangay.query.filter_by(municipality_id=municipality.id).all()
+        barangay_data = {}
+        for barangay in barangays:
+            barangay_data[barangay.name] = {
+                'initial_weight': sum(record.initial_weight for record in barangay.drying_records),
+                'final_weight': sum(record.final_weight for record in barangay.drying_records)
+            }
+
+        return render_template('dashboard.html', 
+                               monthly_data=barangay_data, 
+                               user=current_user, 
+                               is_municipal=True,
+                               view_type='barangay_bar')  
     elif current_user.role == 'barangay':
         # Redirect barangay users to their specific dashboard view
         return redirect(url_for('views.barangay_dashboard'))
     elif current_user.role == 'farmer':
-        # === Farmer Dashboard Logic (Aggregated by Batch Name) ===
+        # Farmer Dashboard Logic (Aggregated by Batch Name)
         records = DryingRecord.query.filter_by(farmer_id=current_user.id).all()
         batch_data = {}
         for record in records:
-            batch = record.batch_name
-            if not batch: # Should ideally not happen if batch_name is required
-                batch = "(Unnamed Batch)"
-                
+            batch = record.batch_name or "(Unnamed Batch)"
             if batch not in batch_data:
                 batch_data[batch] = {'initial_weight': 0, 'final_weight': 0}
-            # Ensure weights are treated as floats
             try:
                 batch_data[batch]['initial_weight'] += float(record.initial_weight)
                 batch_data[batch]['final_weight'] += float(record.final_weight)
             except (ValueError, TypeError):
-                pass # Or log an error
+                pass
 
         return render_template('dashboard.html', 
-                               monthly_data=batch_data, # Pass as monthly_data for template
+                               monthly_data=batch_data, 
                                user=current_user, 
                                is_municipal=False,
-                               view_type='batch_bar') # New view_type for farmer dashboard
+                               view_type='batch_bar')
     else:
-        # Should not happen
         return redirect(url_for('auth.login'))
 
 
@@ -79,7 +86,7 @@ def api_sync():
                 farmer_name=record.get('farmer_name'),
                 farmer_id=record.get('farmer_id'),
                 user_id=current_user.id,
-                barangay_name=current_user.barangay_name  
+                barangay_id=current_user.barangay_id  
             )
             db.session.add(new_record)
 
@@ -96,7 +103,7 @@ def farmers():
     if not hasattr(current_user, "role") or current_user.role != "barangay":
         return redirect(url_for("views.dashboard"))
 
-    farmer_list = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+    farmer_list = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
     return render_template("farmers.html", farmers=farmer_list, user=current_user)
 
 
@@ -121,7 +128,7 @@ def add_farmer():
         first_name=first_name,
         middle_name=middle_name,
         last_name=last_name,
-        barangay_name=current_user.barangay_name,
+        barangay_id=current_user.barangay_id,
         user_id=current_user.id
     )
 
@@ -135,12 +142,12 @@ def add_farmer():
 def records():
     # Check role directly
     if current_user.role == 'municipal':
-        # Municipal users see all records
-        records = DryingRecord.query.order_by(DryingRecord.timestamp.desc()).all()
+        # Municipal users see records for their municipality only
+        records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == current_user.municipality_id).order_by(DryingRecord.timestamp.desc()).all()
     elif current_user.role == 'barangay':
         # Barangay users see records for their barangay
         records = DryingRecord.query \
-            .filter_by(barangay_name=current_user.barangay_name) \
+            .filter_by(barangay_id=current_user.barangay_id) \
             .order_by(DryingRecord.timestamp.desc()).all()
     elif current_user.role == 'farmer':
         # Farmers see only their own records
@@ -166,7 +173,7 @@ def add_record():
     farmers = None
     
     if current_user.role == 'barangay':
-        farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+        farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
 
     if request.method == 'POST':
         record_farmer_id_str = request.form.get('farmer_id')
@@ -178,21 +185,21 @@ def add_record():
             target_farmer = current_user
         elif current_user.role == 'barangay':
             if not record_farmer_id_str:
-                farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
                 return render_template('add_record.html', farmers=farmers, user=current_user)
             
             try:
                 record_farmer_id = int(record_farmer_id_str)
                 target_farmer = Farmer.query.get(record_farmer_id)
-                if not target_farmer or target_farmer.barangay_name != current_user.barangay_name:
-                    farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                if not target_farmer or target_farmer.barangay_id != current_user.barangay_id:
+                    farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
                     return render_template('add_record.html', farmers=farmers, user=current_user)
             except (ValueError, TypeError):
-                farmers = Farmer.query.filter_by(barangay_name=current_user.barangay_name).all()
+                farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
                 return render_template('add_record.html', farmers=farmers, user=current_user)
 
         record_farmer_name = target_farmer.full_name
-        record_barangay_name = target_farmer.barangay_name
+        record_barangay_id = current_user.barangay_id
         batch_name = request.form['batch_name']
         initial_weight = request.form['initial_weight']
         final_weight = request.form['final_weight']
@@ -211,7 +218,7 @@ def add_record():
             batch_name=batch_name, initial_weight=initial_weight, final_weight=final_weight,
             temperature=temperature, humidity=humidity, sensor_value=sensor_value,
             initial_moisture=initial_moisture, final_moisture=final_moisture, drying_time=drying_time,
-            farmer_id=record_farmer_id, farmer_name=record_farmer_name, barangay_name=record_barangay_name,
+            farmer_id=record_farmer_id, farmer_name=record_farmer_name, barangay_id=record_barangay_id,
             user_id=current_user.id, 
             due_date=due_date, date_planted=date_planted, date_harvested=date_harvested, date_dried=date_dried
         )
@@ -231,7 +238,7 @@ def barangay_dashboard():
         records = DryingRecord.query.all()
         barangay_data = {}
         for record in records:
-            barangay = record.barangay_name
+            barangay = record.barangay_id
             if not barangay:
                 continue # Skip records without a barangay name
             if barangay not in barangay_data:
@@ -251,7 +258,7 @@ def barangay_dashboard():
         
     elif current_user.role == 'barangay':
         # === Barangay View Logic (Original Monthly Bar Chart) ===
-        records = DryingRecord.query.filter_by(barangay_name=current_user.barangay_name).all()
+        records = DryingRecord.query.filter_by(barangay_id=current_user.barangay_id).all()
         monthly_data = {}
         for record in records:
             if record.date_dried:
@@ -288,7 +295,7 @@ def barangay_analytics():
         return redirect(url_for('views.dashboard'))
 
     time_period = request.args.get('period', 'month') # Default to month
-    records = DryingRecord.query.filter_by(barangay_name=current_user.barangay_name).all()
+    records = DryingRecord.query.filter_by(barangay_id=current_user.barangay_id).all()
     
     analytics_data = {}
     if time_period == 'year':
@@ -442,3 +449,20 @@ def analytics():
                                user=current_user)
     else:
         return redirect(url_for('views.dashboard'))
+
+@views.route('/municipality_dashboard/<int:municipality_id>')
+@login_required
+def municipality_dashboard(municipality_id):
+    municipality = Municipality.query.get(municipality_id)
+    barangays = Barangay.query.filter_by(municipality_id=municipality.id).all()
+    return render_template('dashboard.html', municipality=municipality, barangays=barangays)
+
+@views.route('/municipality_analytics/<int:municipality_id>')
+@login_required
+def municipality_analytics(municipality_id):
+    municipality = Municipality.query.get(municipality_id)
+    drying_records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == municipality.id).all()
+    return render_template('analytics.html', records=drying_records)
+
+
+

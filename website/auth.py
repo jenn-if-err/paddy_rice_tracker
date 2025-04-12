@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, url_for, flash, render_template, request
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import db, User, Farmer
+from .models import db, User, Farmer, Municipality, Barangay, User
 import os
 
 auth = Blueprint('auth', __name__)
@@ -67,63 +67,123 @@ def login():
 # ✅ Barangay Sign-Up
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
-    if request.method == 'POST':
-        email = request.form.get("email")
-        barangay_name = request.form.get("barangay_name")
-        municipality = request.form.get("municipality")
-        password1 = request.form.get("password1")
-        password2 = request.form.get("password2")
+    from .models import Municipality, Barangay, User
+    from .extensions import db
+    from werkzeug.security import generate_password_hash
 
-        if password1 != password2:
-            return redirect(url_for('auth.sign_up'))
-
-        if User.query.filter_by(email=email).first():
-            return redirect(url_for('auth.sign_up'))
-
-        hashed_pw = generate_password_hash(password1)
-        new_user = User(
-            email=email,
-            full_name="Barangay Staff",
-            role="barangay",
-            barangay_name=barangay_name,
-            password=hashed_pw
-        )
-
-        db.session.add(new_user)
+    # ✅ Insert demo municipality if DB is empty (for testing)
+    if Municipality.query.count() == 0:
+        demo = Municipality(name='Demo Town')
+        db.session.add(demo)
         db.session.commit()
-        return redirect(url_for('auth.login'))
+        print("✅ Inserted demo municipality")
 
-    return render_template("sign_up.html")
+    municipalities = Municipality.query.all()
+    print("📦 Municipalities available for dropdown:", municipalities)
+
+    if request.method == 'POST':
+        print("📥 POST received to /barangay-signup-test")
+        print("Form data:", request.form)
+
+        email = request.form.get('email')
+        municipality_name = request.form.get('municipality', '').strip().title()
+        barangay_name = request.form.get('barangay_name', '').strip().title()
+        password = request.form.get('password1')
+
+        try:
+            # Get or create the municipality
+            municipality = Municipality.query.filter_by(name=municipality_name).first()
+            if not municipality:
+                municipality = Municipality(name=municipality_name)
+                db.session.add(municipality)
+                db.session.commit()
+                print(f"✅ Created municipality: {municipality.name}")
+            else:
+                print(f"ℹ️ Municipality already exists: {municipality.name}")
+
+            # Get or create the barangay
+            barangay = Barangay.query.filter_by(name=barangay_name, municipality_id=municipality.id).first()
+            if not barangay:
+                barangay = Barangay(name=barangay_name, municipality_id=municipality.id)
+                db.session.add(barangay)
+                db.session.commit()
+                print(f"✅ Created barangay: {barangay.name}")
+            else:
+                print(f"ℹ️ Barangay already exists: {barangay.name}")
+
+            # Create the barangay user
+            new_user = User(
+                email=email,
+                role='barangay',
+                barangay_id=barangay.id,
+                full_name="Barangay Officer",
+                password=generate_password_hash(password)
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            print("✅ Barangay user created")
+
+            return redirect(url_for('auth.login'))
+
+        except Exception as e:
+            db.session.rollback()
+            import traceback
+            traceback.print_exc()
+            print(f"❌ Error during barangay signup: {e}")
+            return "Internal Server Error", 500
+
+    return render_template('sign_up.html', municipalities=municipalities)
+
 
 # ✅ Municipal Sign-Up
-@auth.route('/sign-up/municipal', methods=['GET', 'POST'])
-def sign_up_municipal():
+@auth.route('/sign-up-municipal', methods=['GET', 'POST'])
+def signup_municipal():
     if request.method == 'POST':
-        email = request.form.get("email")
-        municipality = request.form.get("municipality")
-        password1 = request.form.get("password1")
-        password2 = request.form.get("password2")
+        print("📥 POST received to /municipal-signup")
+        print(f"Form data: {request.form}")
 
-        if password1 != password2:
-            return redirect(url_for('auth.sign_up_municipal'))
+        email = request.form.get('email')
+        municipality_name = request.form.get('municipality', '').strip().title()
+        password = request.form.get('password1')
+        full_name = "Municipal Officer"
 
-        if User.query.filter_by(email=email).first():
-            return redirect(url_for('auth.sign_up_municipal'))
+        if not municipality_name:
+            print("❌ No municipality provided.")
+            return "Please provide a municipality name", 400
 
-        hashed_pw = generate_password_hash(password1)
-        new_user = User(
-            email=email,
-            full_name="Municipal Officer",
-            role="municipal",
-            barangay_name=None,
-            password=hashed_pw
-        )
+        try:
+            municipality = Municipality.query.filter_by(name=municipality_name).first()
+            if not municipality:
+                municipality = Municipality(name=municipality_name)
+                db.session.add(municipality)
+                db.session.commit()
+                print(f"✅ Municipality created: {municipality.name}")
+            else:
+                print(f"ℹ️ Municipality already exists: {municipality.name}")
 
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('auth.login'))
+            # 🔧 Make sure to assign municipality_id here
+            new_user = User(
+                email=email,
+                full_name=full_name,
+                role='municipal',
+                municipality_id=municipality.id,
+                password=generate_password_hash(password)
+            )
+            db.session.add(new_user)
+            db.session.commit()
 
-    return render_template("sign_up_municipal.html")
+            print("✅ Municipal user created.")
+            return redirect(url_for('auth.login'))
+
+        except Exception as e:
+            db.session.rollback()
+            import traceback
+            traceback.print_exc()
+            print(f"❌ Error during municipal signup: {e}")
+            return "Internal server error", 500
+
+    return render_template('sign_up_municipal.html')
+
 
 # ✅ Logout
 @auth.route('/logout')
