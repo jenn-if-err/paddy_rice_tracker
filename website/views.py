@@ -157,9 +157,12 @@ def records():
     return render_template('records.html', records=records, user=current_user)
 
 
-@views.route('/add_record', methods=['GET', 'POST'])
 @login_required
+@views.route('/add_record', methods=['GET', 'POST'])
 def add_record():
+    if current_user.role == 'municipal':
+        return redirect(url_for('views.records'))
+    
     if current_user.role not in ['barangay', 'farmer']:
         if hasattr(current_user, 'role'):
             return redirect(url_for('views.barangay_dashboard'))
@@ -378,9 +381,12 @@ def farmer_analytics():
                            time_period=time_period,
                            user=current_user)
 
-@views.route('/edit_record/<int:record_id>', methods=['GET', 'POST'])
 @login_required
+@views.route('/edit_record/<int:record_id>', methods=['GET', 'POST'])
 def edit_record(record_id):
+    if current_user.role == 'municipal':
+        return redirect(url_for('views.records'))
+    
     record = DryingRecord.query.get_or_404(record_id)
     if request.method == 'POST':
         record.batch_name = request.form['batch_name']
