@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: c9c1963a54d8
+Revision ID: 9ae49997968c
 Revises: 
-Create Date: 2025-04-11 18:41:17.769970
+Create Date: 2025-04-12 09:20:02.773520
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c9c1963a54d8'
+revision = '9ae49997968c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -47,6 +47,7 @@ def upgrade():
     )
     op.create_table('farmers',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('uuid', sa.String(length=36), nullable=True),
     sa.Column('first_name', sa.String(length=150), nullable=False),
     sa.Column('middle_name', sa.String(length=150), nullable=True),
     sa.Column('last_name', sa.String(length=150), nullable=False),
@@ -57,10 +58,12 @@ def upgrade():
     sa.ForeignKeyConstraint(['barangay_id'], ['barangays.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('username')
+    sa.UniqueConstraint('username'),
+    sa.UniqueConstraint('uuid')
     )
     op.create_table('drying_records',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('uuid', sa.String(length=36), nullable=True),
     sa.Column('timestamp', sa.DateTime(timezone=True), nullable=True),
     sa.Column('batch_name', sa.String(length=150), nullable=False),
     sa.Column('farmer_name', sa.String(length=150), nullable=True),
@@ -77,6 +80,8 @@ def upgrade():
     sa.Column('date_planted', sa.Date(), nullable=True),
     sa.Column('date_harvested', sa.Date(), nullable=True),
     sa.Column('due_date', sa.Date(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('farmer_id', sa.Integer(), nullable=True),
     sa.Column('barangay_id', sa.Integer(), nullable=True),
@@ -85,7 +90,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['farmer_id'], ['farmers.id'], ),
     sa.ForeignKeyConstraint(['municipality_id'], ['municipalities.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('uuid')
     )
     # ### end Alembic commands ###
 

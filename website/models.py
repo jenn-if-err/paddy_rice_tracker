@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+import uuid
 from .extensions import db
 
 # ================================
@@ -33,6 +34,10 @@ class Farmer(db.Model, UserMixin):
     __tablename__ = 'farmers'
 
     id = db.Column(db.Integer, primary_key=True)
+
+    # ✅ Sync-safe ID (optional)
+    uuid = db.Column(db.String(36), unique=True, default=lambda: str(uuid.uuid4()))
+
     first_name = db.Column(db.String(150), nullable=False)
     middle_name = db.Column(db.String(150), nullable=True)
     last_name = db.Column(db.String(150), nullable=False)
@@ -65,6 +70,10 @@ class DryingRecord(db.Model):
     __tablename__ = 'drying_records'
 
     id = db.Column(db.Integer, primary_key=True)
+
+    # ✅ Unique UUID for sync and duplicate prevention
+    uuid = db.Column(db.String(36), unique=True, nullable=True)
+
     timestamp = db.Column(db.DateTime(timezone=True), default=func.now())
     batch_name = db.Column(db.String(150), nullable=False)
     farmer_name = db.Column(db.String(150), nullable=True)
@@ -83,6 +92,9 @@ class DryingRecord(db.Model):
     date_planted = db.Column(db.Date)
     date_harvested = db.Column(db.Date)
     due_date = db.Column(db.Date)
+
+    created_at = db.Column(db.DateTime, default=func.now())
+    updated_at = db.Column(db.DateTime, onupdate=func.now())
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     farmer_id = db.Column(db.Integer, db.ForeignKey('farmers.id'), nullable=True)
