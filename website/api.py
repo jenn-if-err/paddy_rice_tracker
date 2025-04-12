@@ -2,8 +2,12 @@ from flask import Blueprint, request, jsonify
 from .models import DryingRecord
 from .extensions import db
 from flask_login import login_required, current_user
+from .models import Farmer
+from werkzeug.security import check_password_hash
+from flask_login import login_user
 
 api = Blueprint('api', __name__)
+auth = Blueprint('auth', __name__)
 
 @api.route('/sync', methods=['POST'])
 @login_required

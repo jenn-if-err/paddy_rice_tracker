@@ -4,11 +4,18 @@
 
 {% block content %}
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-start align-items-center mb-4">
     <h2 class="mb-0 fw-bold">Drying Records</h2>
-    <a href="{{ url_for('views.add_record') }}" class="btn btn-success">
-      <i class="bi bi-plus-lg me-1"></i> Add Record
-    </a>
+    {% if user.role != 'municipal' %}
+    <div class="ms-auto">
+      <a href="{{ url_for('views.add_record') }}" class="btn btn-success me-2">
+        <i class="bi bi-plus-lg me-1"></i> Add Record
+      </a>
+      <a href="#" class="btn btn-success" onclick="toggleAllActions()">
+        <i class="bi bi-pencil-square me-1"></i> Edit Record
+      </a>
+    </div>
+    {% endif %}
   </div>
 
   {% if records %}
@@ -29,9 +36,11 @@
           <th>Date Dried</th>
           <th>Harvested Weight</th>
           <th>Post-Dried Weight</th>
+          {% if user.role != 'municipal' %}
           <th>
-            <i class="bi bi-pencil-square" style="cursor: pointer;" onclick="toggleAllActions()"></i>
+            <!-- Removed pencil icon -->
           </th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -52,9 +61,15 @@
           <td>{{ r.final_weight }}kg</td>
           <td>
             <div class="actions" style="display: none;">
-              <a href="{{ url_for('views.edit_record', record_id=r.id) }}" class="btn btn-warning btn-sm">Edit</a>
+              {% if user.role != 'municipal' %}
+                <a href="{{ url_for('views.edit_record', record_id=r.id) }}" class="text-primary me-2">
+                  <i class="bi bi-pencil"></i>
+                </a>
+              {% endif %}
               <form action="{{ url_for('views.delete_record', record_id=r.id) }}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-dark btn-sm">Delete</button>
+                <button type="submit" class="btn btn-link text-danger p-0">
+                  <i class="bi bi-trash"></i>
+                </button>
               </form>
             </div>
           </td>
