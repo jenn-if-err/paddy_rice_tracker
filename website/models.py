@@ -70,8 +70,6 @@ class DryingRecord(db.Model):
     __tablename__ = 'drying_records'
 
     id = db.Column(db.Integer, primary_key=True)
-
-    # ✅ Unique UUID for sync and duplicate prevention
     uuid = db.Column(db.String(36), unique=True, nullable=True)
 
     timestamp = db.Column(db.DateTime(timezone=True), default=func.now())
@@ -86,7 +84,6 @@ class DryingRecord(db.Model):
     final_moisture = db.Column(db.Float, nullable=False)
     drying_time = db.Column(db.String(50), nullable=False)
     final_weight = db.Column(db.Float, nullable=False)
-    shelf_life = db.Column(db.String(50), nullable=True)
 
     date_dried = db.Column(db.Date)
     date_planted = db.Column(db.Date)

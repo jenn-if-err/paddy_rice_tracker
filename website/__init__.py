@@ -29,7 +29,7 @@ def create_app():
     app.register_blueprint(google_bp, url_prefix="/login")
     app.register_blueprint(views, url_prefix="/")
 
-    #Import models after db is initialized!
+    #Import models 
     with app.app_context():
         from .models import User, Farmer, DryingRecord, Municipality, Barangay
         
@@ -41,7 +41,6 @@ def create_app():
     def load_user(user_id_str):
         from .models import User, Farmer # Import both models
         
-        # User ID string is now prefixed, e.g., "user-1" or "farmer-5"
         try:
             prefix, user_id = user_id_str.split('-', 1)
             user_id = int(user_id)
