@@ -572,16 +572,24 @@ def analytics():
 @views.route('/municipality_dashboard/<int:municipality_id>')
 @login_required
 def municipality_dashboard(municipality_id):
-    municipality = Municipality.query.get(municipality_id)
+    if current_user.role != 'municipal' or current_user.municipality_id != municipality_id:
+        return redirect(url_for('views.dashboard'))  # or 403 error
+
+    municipality = Municipality.query.get_or_404(municipality_id)
     barangays = Barangay.query.filter_by(municipality_id=municipality.id).all()
     return render_template('dashboard.html', municipality=municipality, barangays=barangays)
+
 
 @views.route('/municipality_analytics/<int:municipality_id>')
 @login_required
 def municipality_analytics(municipality_id):
-    municipality = Municipality.query.get(municipality_id)
+    if current_user.role != 'municipal' or current_user.municipality_id != municipality_id:
+        return redirect(url_for('views.dashboard'))  # or return 403
+
+    municipality = Municipality.query.get_or_404(municipality_id)
     drying_records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == municipality.id).all()
     return render_template('analytics.html', records=drying_records)
+
 
 @views.route('/another_dashboard')
 @login_required
