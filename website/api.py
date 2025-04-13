@@ -34,7 +34,7 @@ def sync():
             if existing:
                 continue  # Skip duplicate
 
-            # ✅ Look up farmer by farmer_uuid (not farmer_id)
+            # Look up farmer by farmer_uuid
             farmer = Farmer.query.filter_by(uuid=record.get('farmer_uuid')).first()
             if not farmer:
                 print(f"⚠️ Skipping record {record['uuid']}: farmer_uuid {record.get('farmer_uuid')} not found.")
