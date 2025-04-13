@@ -246,7 +246,6 @@ def add_record():
 @login_required
 def barangay_dashboard():
     if current_user.role == 'municipal':
-        
         records = DryingRecord.query.all()
         barangay_data = {}
         for record in records:
@@ -261,13 +260,14 @@ def barangay_dashboard():
                 barangay_data[barangay]['final_weight'] += float(record.final_weight)
             except (ValueError, TypeError):
                 pass 
-                
+
         return render_template('dashboard.html', 
-                               monthly_data=barangay_data, # Pass as monthly_data
+                               monthly_data=barangay_data, 
                                user=current_user, 
                                is_municipal=True,
                                view_type='total') 
-            elif current_user.role == 'barangay':
+
+    elif current_user.role == 'barangay':
         records = DryingRecord.query.filter_by(barangay_id=current_user.barangay_id).all()
         farmer_data = {}
 
@@ -291,41 +291,9 @@ def barangay_dashboard():
                                is_municipal=False,
                                view_type='farmer_bar')  
 
-    # elif current_user.role == 'barangay':
-       
-    #     records = DryingRecord.query.filter_by(barangay_id=current_user.barangay_id).all()
-    #     monthly_data = {}
-    #     for record in records:
-    #         if record.date_dried:
-    #             month = record.date_dried.strftime('%B %Y') 
-    #             if month not in monthly_data:
-    #                 monthly_data[month] = {'initial_weight': 0, 'final_weight': 0}
-    #             try:
-    #                 monthly_data[month]['initial_weight'] += float(record.initial_weight)
-    #                 monthly_data[month]['final_weight'] += float(record.final_weight)
-    #             except (ValueError, TypeError):
-    #                 pass
-    #     sorted_monthly_data = {}
-    #     try: 
-    #         sorted_keys = sorted(monthly_data.keys(), key=lambda d: datetime.strptime(d, '%B %Y'))
-    #         for month_str in sorted_keys:
-    #             sorted_monthly_data[month_str] = monthly_data[month_str]
-    #     except ValueError:
-    #         sorted_monthly_data = monthly_data
-            
-    #     return render_template('dashboard.html', 
-    #                            monthly_data=sorted_monthly_data, 
-    #                            user=current_user, 
-    #                            is_municipal=False,
-    #                            view_type='monthly_bar')
-    # else:
-        
-    #     return redirect(url_for('views.records'))
+    else:
+        return redirect(url_for('views.records'))
 
-
-@views.route('/barangay_analytics')
-@login_required
-from datetime import datetime
 
 @views.route('/barangay_analytics')
 @login_required
@@ -412,8 +380,6 @@ def barangay_analytics():
 #                            user=current_user)
 
 
-@views.route('/farmer_analytics')
-@login_required
 @views.route('/farmer_analytics')
 @login_required
 def farmer_analytics():
@@ -535,8 +501,6 @@ def delete_record(record_id):
 
 @views.route('/analytics')
 @login_required
-from datetime import datetime
-
 def analytics():
     if current_user.role == 'municipal':
         view_type = request.args.get('view', 'year')
@@ -618,6 +582,12 @@ def municipality_analytics(municipality_id):
     municipality = Municipality.query.get(municipality_id)
     drying_records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == municipality.id).all()
     return render_template('analytics.html', records=drying_records)
+
+@views.route('/another_dashboard')
+@login_required
+def another_dashboard():
+    # Logic for the other dashboard
+    pass
 
 
 
