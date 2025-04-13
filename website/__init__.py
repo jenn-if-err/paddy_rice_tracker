@@ -40,7 +40,7 @@ def create_app():
     # Models (import within context)
     with app.app_context():
         from .models import User, Farmer, DryingRecord, Municipality, Barangay
-        # db.create_all()  # Optional: enable during first-time setup
+        db.create_all()  # Optional: enable during first-time setup
 
     # Load user for Flask-Login
     @login_manager.user_loader
