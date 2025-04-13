@@ -2,32 +2,31 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- Removing welcome message -->
-
 <!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-5" style="max-width: 750px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>
-            {% if is_municipal %}
-            Total Barangay Yield Statistics
-            {% elif user.role == 'barangay' %}
-            Monthly Yield Statistics
+            {% if view_type == 'total' %}
+                Total Barangay Yield Statistics
+            {% elif view_type == 'monthly_bar' %}
+                Monthly Yield Statistics
+            {% elif view_type == 'farmer_bar' %}
+                Farmer Yield Statistics
             {% elif user.role == 'farmer' %}
-            Yield Statistics
+                Yield Statistics
             {% else %}
-            Dashboard
+                Dashboard
             {% endif %}
         </h2>
-        <!-- No dropdown toggle needed for farmer -->
     </div>
     
     <canvas id="yieldChart"></canvas>
 </div>
 
 <script>
-    // Always render the bar chart using monthly_data
+    // Get the data passed from Flask
     const chartDataInput = {{ monthly_data|tojson }};
     const labels = Object.keys(chartDataInput);
     const preDryingData = labels.map(label => chartDataInput[label].initial_weight);
@@ -74,7 +73,7 @@
                     stacked: true,
                     title: {
                         display: true,
-                        text: '{% if is_municipal %}Barangay{% elif user.role == "barangay" %}Month{% elif user.role == "farmer" %}Batch Name{% else %}Label{% endif %}'
+                        text: '{% if view_type == "total" %}Barangay{% elif view_type == "monthly_bar" %}Month{% elif view_type == "farmer_bar" %}Farmer{% elif user.role == "farmer" %}Batch Name{% else %}Label{% endif %}'
                     }
                 },
                 y: {
@@ -88,19 +87,19 @@
             plugins: {
                 title: {
                     display: false,
-                    text: '{% if is_municipal %}Total Yield by Barangay{% elif user.role == "barangay" %}Monthly Yield{% elif user.role == "farmer" %}Yield by Batch{% else %}Chart{% endif %}'
+                    text: '{% if view_type == "total" %}Total Yield by Barangay{% elif view_type == "monthly_bar" %}Monthly Yield{% elif view_type == "farmer_bar" %}Yield by Farmer{% elif user.role == "farmer" %}Yield by Batch{% else %}Chart{% endif %}'
                 }
             }
         }
     };
 
-    // Destroy previous chart instance if exists
+    // Destroy previous chart instance if it exists
     let existingChart = Chart.getChart("yieldChart");
     if (existingChart) {
         existingChart.destroy();
     }
 
-    // Create new chart
+    // Render new chart
     const yieldChart = new Chart(
         document.getElementById('yieldChart'),
         config
