@@ -266,7 +266,7 @@ def barangay_dashboard():
                                monthly_data=barangay_data, # Pass as monthly_data
                                user=current_user, 
                                is_municipal=True,
-                               view_type='total') # Indicate it's the total view
+                               view_type='total') 
         
     elif current_user.role == 'barangay':
        

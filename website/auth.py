@@ -126,7 +126,7 @@ def sign_up():
             db.session.rollback()
             import traceback
             traceback.print_exc()
-            print(f"❌ Error during barangay signup: {e}")
+            print(f"Error during barangay signup: {e}")
             return "Internal Server Error", 500
 
     return render_template('sign_up.html', municipalities=municipalities)
