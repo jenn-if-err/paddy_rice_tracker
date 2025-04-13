@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, url_for, flash, render_template, request, jsonify
+from flask import Blueprint, redirect, url_for, flash, render_template, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -47,11 +47,11 @@ def login():
             farmer = Farmer.query.filter_by(username=email).first()
             if farmer and check_password_hash(farmer.password, password):
                 login_user(farmer)
-                if request.is_json:
+                if request.is_json or request.headers.get('Accept') == 'application/json':
                     return jsonify({"message": "Logged in successfully!"}), 200
                 return redirect(url_for("views.dashboard"))
             else:
-                if request.is_json:
+                if request.is_json or request.headers.get('Accept') == 'application/json':
                     return jsonify({"message": "Invalid username or password."}), 401
                 flash("Invalid username or password.", "error")
                 return redirect(url_for("auth.login"))
@@ -60,11 +60,11 @@ def login():
             user = User.query.filter_by(email=email).first()
             if user and check_password_hash(user.password, password):
                 login_user(user)
-                if request.is_json:
+                if request.is_json or request.headers.get('Accept') == 'application/json':
                     return jsonify({"message": "Logged in successfully!"}), 200
                 return redirect(url_for("views.dashboard"))
             else:
-                if request.is_json:
+                if request.is_json or request.headers.get('Accept') == 'application/json':
                     return jsonify({"message": "Invalid email or password."}), 401
                 flash("Invalid email or password.", "error")
                 return redirect(url_for("auth.login"))
