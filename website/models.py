@@ -34,8 +34,6 @@ class Farmer(db.Model, UserMixin):
     __tablename__ = 'farmers'
 
     id = db.Column(db.Integer, primary_key=True)
-
-    # ✅ Sync-safe ID (optional)
     uuid = db.Column(db.String(36), unique=True, default=lambda: str(uuid.uuid4()))
 
     first_name = db.Column(db.String(150), nullable=False)
@@ -70,7 +68,7 @@ class DryingRecord(db.Model):
     __tablename__ = 'drying_records'
 
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=True)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
 
     timestamp = db.Column(db.DateTime(timezone=True), default=func.now())
     batch_name = db.Column(db.String(150), nullable=False)

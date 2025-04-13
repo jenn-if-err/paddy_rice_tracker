@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 9ae49997968c
+Revision ID: 10c5befcd6a6
 Revises: 
-Create Date: 2025-04-12 09:20:02.773520
+Create Date: 2025-04-13 09:31:16.650380
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9ae49997968c'
+revision = '10c5befcd6a6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,7 +63,7 @@ def upgrade():
     )
     op.create_table('drying_records',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('uuid', sa.String(length=36), nullable=True),
+    sa.Column('uuid', sa.String(length=36), nullable=False),
     sa.Column('timestamp', sa.DateTime(timezone=True), nullable=True),
     sa.Column('batch_name', sa.String(length=150), nullable=False),
     sa.Column('farmer_name', sa.String(length=150), nullable=True),
@@ -75,7 +75,6 @@ def upgrade():
     sa.Column('final_moisture', sa.Float(), nullable=False),
     sa.Column('drying_time', sa.String(length=50), nullable=False),
     sa.Column('final_weight', sa.Float(), nullable=False),
-    sa.Column('shelf_life', sa.String(length=50), nullable=True),
     sa.Column('date_dried', sa.Date(), nullable=True),
     sa.Column('date_planted', sa.Date(), nullable=True),
     sa.Column('date_harvested', sa.Date(), nullable=True),

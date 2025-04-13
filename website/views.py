@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, session
 from flask_login import login_required, current_user
 from .models import DryingRecord, Farmer, Municipality, Barangay, User
 from .extensions import db
@@ -157,20 +157,17 @@ def records():
     return render_template('records.html', records=records, user=current_user)
 
 
-@login_required
 @views.route('/add_record', methods=['GET', 'POST'])
+@login_required
 def add_record():
     if current_user.role == 'municipal':
         return redirect(url_for('views.records'))
-    
+
     if current_user.role not in ['barangay', 'farmer']:
-        if hasattr(current_user, 'role'):
-            return redirect(url_for('views.barangay_dashboard'))
-        else:
-            return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login'))
 
     farmers = None
-    
+
     if current_user.role == 'barangay':
         farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
 
@@ -186,7 +183,7 @@ def add_record():
             if not record_farmer_id_str:
                 farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
                 return render_template('add_record.html', farmers=farmers, user=current_user)
-            
+
             try:
                 record_farmer_id = int(record_farmer_id_str)
                 target_farmer = Farmer.query.get(record_farmer_id)
@@ -196,6 +193,12 @@ def add_record():
             except (ValueError, TypeError):
                 farmers = Farmer.query.filter_by(barangay_id=current_user.barangay_id).all()
                 return render_template('add_record.html', farmers=farmers, user=current_user)
+
+        if current_user.role == 'farmer':
+            staff_user = User.query.filter_by(barangay_id=current_user.barangay_id).first()
+            user_id = staff_user.id if staff_user else None
+        else:
+            user_id = current_user.id
 
         record_farmer_name = target_farmer.full_name
         record_barangay_id = current_user.barangay_id
@@ -214,20 +217,30 @@ def add_record():
         date_dried = datetime.strptime(request.form.get('date_dried'), '%Y-%m-%d').date() if request.form.get('date_dried') else None
 
         new_record = DryingRecord(
-            batch_name=batch_name, initial_weight=initial_weight, final_weight=final_weight,
-            temperature=temperature, humidity=humidity, sensor_value=sensor_value,
-            initial_moisture=initial_moisture, final_moisture=final_moisture, drying_time=drying_time,
-            farmer_id=record_farmer_id, farmer_name=record_farmer_name, barangay_id=record_barangay_id,
-            user_id=current_user.id, 
-            due_date=due_date, date_planted=date_planted, date_harvested=date_harvested, date_dried=date_dried
+            batch_name=batch_name,
+            initial_weight=initial_weight,
+            final_weight=final_weight,
+            temperature=temperature,
+            humidity=humidity,
+            sensor_value=sensor_value,
+            initial_moisture=initial_moisture,
+            final_moisture=final_moisture,
+            drying_time=drying_time,
+            farmer_id=record_farmer_id,
+            farmer_name=record_farmer_name,
+            barangay_id=record_barangay_id,
+            user_id=user_id,  
+            due_date=due_date,
+            date_planted=date_planted,
+            date_harvested=date_harvested,
+            date_dried=date_dried
         )
         db.session.add(new_record)
         db.session.commit()
         return redirect(url_for('views.records'))
 
-    return render_template('add_record.html',
-                           farmers=farmers,
-                           user=current_user)
+    return render_template('add_record.html', farmers=farmers, user=current_user)
+
 
 @views.route('/barangay_dashboard')
 @login_required
