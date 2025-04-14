@@ -54,45 +54,6 @@ def dashboard():
         return redirect(url_for('auth.login'))
 
 
-# ============================
-# API Sync (POST from Local)
-# ============================
-@views.route('/api/sync', methods=['POST'])
-@login_required
-def api_sync():
-    try:
-        data = request.get_json()
-
-        if not data or 'records' not in data:
-            return jsonify({"status": "error", "message": "Invalid payload"}), 400
-
-        for record in data['records']:
-            new_record = DryingRecord(
-                batch_name=record.get('batch_name'),
-                initial_weight=record.get('initial_weight'),
-                temperature=record.get('temperature'),
-                humidity=record.get('humidity'),
-                sensor_value=record.get('sensor_value'),
-                initial_moisture=record.get('initial_moisture'),
-                final_moisture=record.get('final_moisture'),
-                drying_time=record.get('drying_time'),
-                final_weight=record.get('final_weight'),
-                date_planted=record.get('date_planted'),
-                date_harvested=record.get('date_harvested'),
-                date_dried=record.get('date_dried'),
-                farmer_name=record.get('farmer_name'),
-                farmer_id=record.get('farmer_id'),
-                user_id=current_user.id,
-                barangay_id=current_user.barangay_id  
-            )
-            db.session.add(new_record)
-
-        db.session.commit()
-        return jsonify({"status": "success", "message": "Records synced."}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"status": "error", "message": str(e)}), 500
 
 @views.route("/farmers", methods=["GET"])
 @login_required
