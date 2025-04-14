@@ -10,7 +10,6 @@ def create_app():
     load_dotenv(find_dotenv()) 
     app = Flask(__name__)
 
-    # Config
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "dev-secret")
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://paddy_rice_tracker_db_user:2RX9usq562ns4fB04L8Y2tsJAVD1YTaV@dpg-cvrqgq6r433s73b1sbng-a/paddy_rice_tracker_db")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -24,7 +23,7 @@ def create_app():
     login_manager.login_message = ''
     login_manager.init_app(app)
 
-    # Unauthorized handler override to allow public API access
+    # unauthorized handler override to allow public API access
     @login_manager.unauthorized_handler
     def unauthorized():
         if request.path.startswith("/api"):
@@ -40,7 +39,7 @@ def create_app():
     # Models (import within context)
     with app.app_context():
         from .models import User, Farmer, DryingRecord, Municipality, Barangay
-        #db.create_all()  # Optional: enable during first-time setup
+        #db.create_all()  # enable during first-time setup
 
     # Load user for Flask-Login
     @login_manager.user_loader

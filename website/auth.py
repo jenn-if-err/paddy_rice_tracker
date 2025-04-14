@@ -42,7 +42,7 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # Check if input is a farmer username (no @ symbol)
+        # Check if input is a farmer username 
         if '@' not in email:
             farmer = Farmer.query.filter_by(username=email).first()
             if farmer and check_password_hash(farmer.password, password):
@@ -56,7 +56,7 @@ def login():
                 flash("Invalid username or password.", "error")
                 return redirect(url_for("auth.login"))
         else:
-            # Regular user (email format)
+            # Regular user 
             user = User.query.filter_by(email=email).first()
             if user and check_password_hash(user.password, password):
                 login_user(user)
@@ -88,7 +88,7 @@ def sign_up():
         password = request.form.get('password1')
 
         try:
-            # Get or create the municipality
+            # get or create the municipality
             municipality = Municipality.query.filter_by(name=municipality_name).first()
             if not municipality:
                 municipality = Municipality(name=municipality_name)
@@ -98,7 +98,7 @@ def sign_up():
             else:
                 print(f"ℹMunicipality already exists: {municipality.name}")
 
-            # Get or create the barangay
+            # get or create the barangay
             barangay = Barangay.query.filter_by(name=barangay_name, municipality_id=municipality.id).first()
             if not barangay:
                 barangay = Barangay(name=barangay_name, municipality_id=municipality.id)
@@ -108,7 +108,7 @@ def sign_up():
             else:
                 print(f"ℹBarangay already exists: {barangay.name}")
 
-            # Create the barangay user
+            # create the barangay user
             new_user = User(
                 email=email,
                 role='barangay',

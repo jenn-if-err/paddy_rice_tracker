@@ -26,7 +26,7 @@
 </div>
 
 <script>
-    // Get the data passed from Flask
+    
     const chartDataInput = {{ monthly_data|tojson }};
     const labels = Object.keys(chartDataInput);
     const preDryingData = labels.map(label => chartDataInput[label].initial_weight);
@@ -93,13 +93,13 @@
         }
     };
 
-    // Destroy previous chart instance if it exists
+    
     let existingChart = Chart.getChart("yieldChart");
     if (existingChart) {
         existingChart.destroy();
     }
 
-    // Render new chart
+   
     const yieldChart = new Chart(
         document.getElementById('yieldChart'),
         config

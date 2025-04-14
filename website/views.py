@@ -54,9 +54,8 @@ def dashboard():
         return redirect(url_for('auth.login'))
 
 
-# ============================
+
 # API Sync (POST from Local)
-# ============================
 @views.route('/api/sync', methods=['POST'])
 @login_required
 def api_sync():
@@ -138,20 +137,19 @@ def add_farmer():
 @login_required
 def records():
     if current_user.role == 'municipal':
-        # Municipal users see records for their municipality only
+        # municipal see records for their municipality only
         records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == current_user.municipality_id).order_by(DryingRecord.timestamp.desc()).all()
     elif current_user.role == 'barangay':
-        # Barangay users see records for their barangay only
+        # barangay see records for their barangay only
         records = DryingRecord.query \
             .filter_by(barangay_id=current_user.barangay_id) \
             .order_by(DryingRecord.timestamp.desc()).all()
     elif current_user.role == 'farmer':
-        # Farmers see only their own records
+        # farmers see only their own records
         records = DryingRecord.query \
             .filter_by(farmer_id=current_user.id) \
             .order_by(DryingRecord.timestamp.desc()).all()
     else:
-        # Unknown role
         records = []
 
     return render_template('records.html', records=records, user=current_user)
@@ -306,7 +304,6 @@ def barangay_analytics():
 
     analytics_data = {}
 
-    # Step 1: Populate analytics_data
     for record in records:
         if record.date_dried:
             if time_period == 'month':
@@ -321,7 +318,6 @@ def barangay_analytics():
             except (ValueError, TypeError):
                 pass
 
-    # Step 2: Sort analytics_data keys chronologically
     try:
         if time_period == 'month':
             sorted_keys = sorted(analytics_data.keys(), key=lambda d: datetime.strptime(d, '%b %Y'))
@@ -331,7 +327,7 @@ def barangay_analytics():
     except ValueError:
         sorted_data = analytics_data  # Fallback
 
-    # Step 3: Render chart
+
     return render_template('barangay_analytics.html',
                            analytics_data=sorted_data,
                            time_period=time_period,
@@ -341,7 +337,6 @@ def barangay_analytics():
 @views.route('/farmer_analytics')
 @login_required
 def farmer_analytics():
-    # Redirect non-farmers
     if current_user.role != 'farmer':
         if hasattr(current_user, 'role') and current_user.role in ['municipal', 'barangay']:
             return redirect(url_for('views.barangay_dashboard'))
@@ -353,7 +348,6 @@ def farmer_analytics():
 
     analytics_data = {}
 
-    # Step 1: Populate analytics_data
     for record in records:
         if record.date_dried:
             if time_period == 'month':
@@ -368,7 +362,7 @@ def farmer_analytics():
             except (ValueError, TypeError):
                 pass
 
-    # Step 2: Sort chronologically
+    
     try:
         if time_period == 'month':
             sorted_keys = sorted(analytics_data.keys(), key=lambda d: datetime.strptime(d, '%b %Y'))
@@ -378,7 +372,6 @@ def farmer_analytics():
     except ValueError:
         sorted_data = analytics_data  # Fallback
 
-    # Step 3: Render
     return render_template('farmer_analytics.html',
                            analytics_data=sorted_data,
                            time_period=time_period,
@@ -418,14 +411,12 @@ def analytics():
     if current_user.role == 'municipal':
         view_type = request.args.get('view', 'year')
 
-        # ✅ Filter only records from the municipal user's assigned municipality
         records = DryingRecord.query.join(Barangay).filter(
             Barangay.municipality_id == current_user.municipality_id
         ).all()
 
         analytics_data = {}
 
-        # Step 1: Populate analytics_data
         for record in records:
             if record.date_dried:
                 if view_type == 'month':
@@ -440,7 +431,6 @@ def analytics():
                 except (ValueError, TypeError):
                     pass
 
-        # Step 2: Sort keys correctly
         try:
             if view_type == 'month':
                 sorted_keys = sorted(analytics_data.keys(), key=lambda d: datetime.strptime(d, '%b %Y'))
@@ -477,12 +467,6 @@ def municipality_analytics(municipality_id):
     drying_records = DryingRecord.query.join(Barangay).filter(Barangay.municipality_id == municipality.id).all()
     return render_template('analytics.html', records=drying_records)
 
-
-@views.route('/another_dashboard')
-@login_required
-def another_dashboard():
-    # Logic for the other dashboard
-    pass
 
 
 

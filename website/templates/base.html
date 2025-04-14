@@ -7,7 +7,6 @@
 
   <!-- Favicon -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
-  <!-- For Safari on iOS -->
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.svg') }}">
 
   <!-- Bootstrap CSS (CDN) -->
@@ -19,14 +18,14 @@
   <style>
     /* Global Link Styling */
     a {
-      color: #6c757d; /* Bootstrap secondary/gray */
-      text-decoration: none; /* Optional: remove underline */
+      color: #6c757d; 
+      text-decoration: none; 
     }
     a:hover {
-      color: #355b25; /* Dark green */
-      /* text-decoration: underline; */ /* Optional: underline on hover */
+      color: #355b25; 
+      
     }
-    /* Ensure dropdown items don't inherit global link color */
+    
     .dropdown-item {
         color: #212529; /* Default dark text color */
     }
@@ -54,7 +53,7 @@
     .nav-link.active {
       background-color: #f8f9fa;
       border-left: 4px solid #355b25;
-      padding-left: calc(1rem - 4px); /* Adjust padding to account for border */
+      padding-left: calc(1rem - 4px); 
       transform: translateX(4px);
     }
 

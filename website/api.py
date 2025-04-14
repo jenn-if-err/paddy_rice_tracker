@@ -20,7 +20,7 @@ def sync():
             return jsonify({"status": "error", "message": "Invalid data format."}), 400
 
         for record in data['records']:
-            # Validate required fields
+            # validation
             required_fields = [
                 'uuid', 'batch_name', 'initial_weight', 'temperature', 'humidity',
                 'sensor_value', 'initial_moisture', 'final_moisture',
@@ -29,22 +29,22 @@ def sync():
             if not all(field in record for field in required_fields):
                 return jsonify({"status": "error", "message": "Missing fields in record."}), 400
 
-            # Check if the record already exists (by UUID)
+            # dheck if the record already exists
             existing = DryingRecord.query.filter_by(uuid=record['uuid']).first()
             if existing:
-                continue  # Skip duplicate
+                continue 
 
-            # Look up farmer by farmer_uuid
+            # scan  farmer by farmer_uuid
             farmer = Farmer.query.filter_by(uuid=record.get('farmer_uuid')).first()
             if not farmer:
                 print(f"⚠️ Skipping record {record['uuid']}: farmer_uuid {record.get('farmer_uuid')} not found.")
                 continue
 
-            # Parse optional dates
+            
             def parse_date(d):
                 return datetime.strptime(d, '%Y-%m-%d').date() if d else None
 
-            # Parse updated_at if provided
+            
             updated_at = None
             if 'updated_at' in record and record['updated_at']:
                 try:
@@ -52,7 +52,7 @@ def sync():
                 except ValueError:
                     print(f"⚠️ Invalid updated_at for record {record['uuid']} — skipping timestamp")
 
-            # Create the new drying record
+            # create the new drying record
             new_record = DryingRecord(
                 uuid=record['uuid'],
                 batch_name=record['batch_name'],
