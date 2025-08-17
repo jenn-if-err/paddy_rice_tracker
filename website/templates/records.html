@@ -38,7 +38,7 @@
           <th>Post-Dried Weight</th>
           {% if user.role != 'municipal' %}
           <th>
-            <!-- Removed pencil icon -->
+
           </th>
           {% endif %}
         </tr>
@@ -83,7 +83,7 @@
   {% endif %}
 </div>
 
-<!-- Add Record Modal -->
+
 <div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form method="POST" action="{{ url_for('views.add_record') }}">
@@ -93,7 +93,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Form Fields for Record -->
+
           <div class="mb-3">
             <label for="batch_name" class="form-label">Batch Name</label>
             <input type="text" class="form-control" id="batch_name" name="batch_name" required>
@@ -107,7 +107,7 @@
             <input type="number" class="form-control" id="final_weight" name="final_weight" step="any" required>
           </div>
 
-          <!-- Farmer Name (Dropdown for Barangay, Pre-filled for Farmer) -->
+
           {% if current_user.role == 'barangay' %}
           <div class="mb-3">
             <label for="farmer_name" class="form-label">Farmer Name</label>

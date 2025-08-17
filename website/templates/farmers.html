@@ -5,14 +5,14 @@
 <div class="container-fluid">
   <h2 class="mb-4 fw-bold">Farmers - {{ current_user.barangay.name if current_user.barangay else 'Unknown Barangay' }}</h2>
 
-  <!-- Add Farmer Button -->
+
   <div class="d-flex justify-content-end mb-3">
     <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addFarmerModal">
       <i class="bi bi-person-plus me-1"></i> Add Farmer
     </a>
   </div>
 
-  <!-- Farmers Table -->
+
   {% if farmers %}
   <div class="table-responsive">
     <table class="table table-bordered align-middle">
@@ -41,7 +41,7 @@
   {% endif %}
 </div>
 
-<!-- Add Farmer Modal -->
+
 <div class="modal fade" id="addFarmerModal" tabindex="-1" aria-labelledby="addFarmerModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form method="POST" action="{{ url_for('views.add_farmer') }}">

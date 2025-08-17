@@ -2,7 +2,6 @@
 {% block title %}Farmer Analytics{% endblock %}
 
 {% block content %}
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-5" style="max-width: 750px;">
@@ -75,13 +74,13 @@
         }
     };
 
-    // Destroy previous chart instance if exists
+
     let existingChart = Chart.getChart("analyticsChart");
     if (existingChart) {
         existingChart.destroy();
     }
     
-    // Create new chart
+
     const analyticsChart = new Chart(
         document.getElementById('analyticsChart'),
         config

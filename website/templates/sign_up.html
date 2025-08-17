@@ -83,15 +83,15 @@
 <body>
   <div class="container-fluid signup-container px-4 px-md-5">
     <div class="row w-100">
-      <!-- Left Logo (optional, or remove this column if not needed) -->
+
       <div class="col-md-6 d-none d-md-flex left-logo-col flex-column">
         <img src="{{ url_for('static', filename='logo.svg') }}" alt="Paddy Rice Logo" class="logo-img">
       </div>
 
-      <!-- Right Signup Form -->
+
       <div class="col-md-6 d-flex align-items-center justify-content-center">
         <div class="signup-box">
-          <!-- Heading moved above the form -->
+
           <h3 class="text-center mb-4 fw-bold">Create your Barangay Account</h3>
 
           {% with messages = get_flashed_messages(with_categories=true) %}
@@ -106,13 +106,13 @@
           {% endwith %}
 
           <form method="POST" action="{{ url_for('auth.sign_up') }}">
-            <!-- Email -->
+
             <div class="form-floating mb-3">
               <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
               <label for="email">Email address</label>
             </div>
 
-            <!-- Municipality Dropdown -->
+
             <div class="form-floating mb-3">
               <select class="form-control" id="municipality" name="municipality" required>
                 <option value="" disabled selected>Select Municipality</option>
@@ -127,13 +127,13 @@
               <label for="municipality">Municipality</label>
             </div>
 
-            <!-- Barangay Name -->
+
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="barangayName" name="barangay_name" placeholder="Barangay Name" required>
               <label for="barangayName">Barangay Name</label>
             </div>
 
-            <!-- Password -->
+
             <div class="input-group mb-3">
               <div class="form-floating">
                 <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" required>
@@ -144,7 +144,7 @@
               </span>
             </div>
 
-            <!-- Confirm Password -->
+
             <div class="input-group mb-4">
               <div class="form-floating">
                 <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm Password" required>

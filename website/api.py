@@ -37,7 +37,7 @@ def sync():
             # Look up farmer by farmer_uuid
             farmer = Farmer.query.filter_by(uuid=record.get('farmer_uuid')).first()
             if not farmer:
-                print(f"⚠️ Skipping record {record['uuid']}: farmer_uuid {record.get('farmer_uuid')} not found.")
+                print(f"Skipping record {record['uuid']}: farmer_uuid {record.get('farmer_uuid')} not found.")
                 continue
 
             # Parse optional dates
@@ -50,7 +50,7 @@ def sync():
                 try:
                     updated_at = datetime.fromisoformat(record['updated_at'])
                 except ValueError:
-                    print(f"⚠️ Invalid updated_at for record {record['uuid']} — skipping timestamp")
+                    print(f"Invalid updated_at for record {record['uuid']} — skipping timestamp")
 
             # Create the new drying record
             new_record = DryingRecord(

@@ -2,7 +2,6 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-5" style="max-width: 750px;">
@@ -26,7 +25,6 @@
 </div>
 
 <script>
-    // Get the data passed from Flask
     const chartDataInput = {{ monthly_data|tojson }};
     const labels = Object.keys(chartDataInput);
     const preDryingData = labels.map(label => chartDataInput[label].initial_weight);
@@ -93,13 +91,11 @@
         }
     };
 
-    // Destroy previous chart instance if it exists
     let existingChart = Chart.getChart("yieldChart");
     if (existingChart) {
         existingChart.destroy();
     }
 
-    // Render new chart
     const yieldChart = new Chart(
         document.getElementById('yieldChart'),
         config

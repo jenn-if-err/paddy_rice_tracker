@@ -287,7 +287,7 @@ def barangay_analytics():
         else:
             sorted_keys = sorted(analytics_data.keys(), key=int)
         
-        # Create ordered lists instead of dictionary to preserve order
+
         sorted_labels = sorted_keys
         sorted_values = [analytics_data[key] for key in sorted_keys]
     except ValueError:
@@ -340,7 +340,7 @@ def farmer_analytics():
         else:
             sorted_keys = sorted(analytics_data.keys(), key=int)
         
-        # Create ordered lists instead of dictionary to preserve order
+
         sorted_labels = sorted_keys
         sorted_values = [analytics_data[key] for key in sorted_keys]
     except ValueError:
@@ -415,7 +415,7 @@ def analytics():
             else:
                 sorted_keys = sorted(analytics_data.keys(), key=int)
             
-            # Create ordered lists instead of dictionary to preserve order
+
             sorted_labels = sorted_keys
             sorted_values = [analytics_data[key] for key in sorted_keys]
         except Exception:
