@@ -17,9 +17,10 @@
 </div>
 
 <script>
-    const analyticsData = {{ analytics_data|tojson }};
-    const labels = Object.keys(analyticsData);
-    const values = Object.values(analyticsData);
+    const analyticsLabels = {{ analytics_labels|tojson }};
+    const analyticsValues = {{ analytics_values|tojson }};
+    const labels = analyticsLabels;
+    const values = analyticsValues;
 
     const data = {
         labels: labels,

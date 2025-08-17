@@ -286,13 +286,17 @@ def barangay_analytics():
                                             datetime.strptime(d, '%b %Y').month))
         else:
             sorted_keys = sorted(analytics_data.keys(), key=int)
-        sorted_data = {key: analytics_data[key] for key in sorted_keys}
+        
+        # Create ordered lists instead of dictionary to preserve order
+        sorted_labels = sorted_keys
+        sorted_values = [analytics_data[key] for key in sorted_keys]
     except ValueError:
-        sorted_data = analytics_data  # Fallback
-
+        sorted_labels = list(analytics_data.keys())
+        sorted_values = list(analytics_data.values())
 
     return render_template('barangay_analytics.html',
-                           analytics_data=sorted_data,
+                           analytics_labels=sorted_labels,
+                           analytics_values=sorted_values,
                            time_period=time_period,
                            user=current_user)
 
@@ -335,12 +339,17 @@ def farmer_analytics():
                                             datetime.strptime(d, '%b %Y').month))
         else:
             sorted_keys = sorted(analytics_data.keys(), key=int)
-        sorted_data = {key: analytics_data[key] for key in sorted_keys}
+        
+        # Create ordered lists instead of dictionary to preserve order
+        sorted_labels = sorted_keys
+        sorted_values = [analytics_data[key] for key in sorted_keys]
     except ValueError:
-        sorted_data = analytics_data  # Fallback
+        sorted_labels = list(analytics_data.keys())
+        sorted_values = list(analytics_data.values())
 
     return render_template('farmer_analytics.html',
-                           analytics_data=sorted_data,
+                           analytics_labels=sorted_labels,
+                           analytics_values=sorted_values,
                            time_period=time_period,
                            user=current_user)
 
@@ -405,12 +414,17 @@ def analytics():
                                                 datetime.strptime(d, '%b %Y').month))
             else:
                 sorted_keys = sorted(analytics_data.keys(), key=int)
-            sorted_data = {key: analytics_data[key] for key in sorted_keys}
+            
+            # Create ordered lists instead of dictionary to preserve order
+            sorted_labels = sorted_keys
+            sorted_values = [analytics_data[key] for key in sorted_keys]
         except Exception:
-            sorted_data = analytics_data  
+            sorted_labels = list(analytics_data.keys())
+            sorted_values = list(analytics_data.values())
 
         return render_template('analytics.html', 
-                               analytics_data=sorted_data, 
+                               analytics_labels=sorted_labels,
+                               analytics_values=sorted_values,
                                view_type=view_type,
                                user=current_user)
 
