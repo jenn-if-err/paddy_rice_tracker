@@ -198,7 +198,7 @@ paddy_rice_tracker/
 
 ---
 
-## 🔧 Database Schema
+## Database Schema
 
 ### Core Models
 
@@ -222,7 +222,7 @@ paddy_rice_tracker/
 
 ---
 
-## 📡 API Usage Examples
+## API Usage Examples
 
 ### Sync IoT Data
 ```bash
